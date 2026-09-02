@@ -23,3 +23,5 @@ This is a host/web UI proof. It is not evidence of operation on an EVK or
 production panel, and it does not claim certification by or live integration
 with a third-party booking platform.
 
+The in-product identity uses the approved Active-Edge horizontal lockup from
+the canonical `marketing-collateral` brand library.

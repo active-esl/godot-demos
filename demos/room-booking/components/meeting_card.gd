@@ -81,6 +81,12 @@ func configure(snapshot: Dictionary, model) -> void:
 		else:
 			var grace: int = max(0, int(current.start) + model.CHECKIN_GRACE - model.now_min)
 			hint.text = "Awaiting check-in · Auto-release in %d min" % grace
+	elif snapshot.state == "reserved" and upcoming != null:
+		eyebrow.text = "UP NEXT"
+		title.text = "Reserved from %s" % model.format_time(int(upcoming.start))
+		host.text = str(upcoming.title) + " · " + str(upcoming.host)
+		timing.text = "%s — %s" % [model.format_time(int(upcoming.start)), model.format_time(int(upcoming.end))]
+		hint.text = "This room is being held for the next meeting."
 	else:
 		eyebrow.text = "ROOM AVAILABLE"
 		title.text = "Free now"
@@ -93,7 +99,7 @@ func configure(snapshot: Dictionary, model) -> void:
 	checkin_button.visible = current != null and not bool(current.checked_in)
 	extend_button.visible = current != null
 	end_button.visible = current != null
-	book_button.visible = current == null
+	book_button.visible = current == null and snapshot.state == "free"
 
 func _label(value: String, size: int, colour: Color, bold: bool) -> Label:
 	var item := Label.new()

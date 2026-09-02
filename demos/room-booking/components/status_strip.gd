@@ -11,32 +11,45 @@ var state_label: Label
 var room_label: Label
 var detail_label: Label
 var clock_label: Label
+var corridor_ribbon: ColorRect
 
 func _ready() -> void:
+	var strip := StyleBoxFlat.new()
+	strip.bg_color = CARBON
+	add_stylebox_override("panel", strip)
+	var column := VBoxContainer.new()
+	column.add_constant_override("separation", 0)
+	add_child(column)
 	var margin := MarginContainer.new()
-	margin.add_constant_override("margin_left", 32)
+	margin.add_constant_override("margin_left", 26)
 	margin.add_constant_override("margin_right", 32)
-	margin.add_constant_override("margin_top", 20)
-	margin.add_constant_override("margin_bottom", 18)
-	add_child(margin)
+	margin.add_constant_override("margin_top", 16)
+	margin.add_constant_override("margin_bottom", 12)
+	margin.size_flags_vertical = SIZE_EXPAND_FILL
+	column.add_child(margin)
 	var row := HBoxContainer.new()
-	row.add_constant_override("separation", 22)
+	row.add_constant_override("separation", 28)
 	margin.add_child(row)
-	var brand := Label.new()
-	brand.text = "ACTIVE-EDGE"
-	brand.add_color_override("font_color", CARBON)
-	brand.add_font_override("font", _font(true, 23))
-	brand.rect_min_size.x = 190
-	row.add_child(brand)
+	var logo := TextureRect.new()
+	logo.texture = load("res://assets/active-edge-symbol-wordmark-lockup.png")
+	logo.expand = true
+	logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	logo.rect_min_size = Vector2(276, 82)
+	logo.mouse_filter = MOUSE_FILTER_IGNORE
+	row.add_child(logo)
+	var divider := VSeparator.new()
+	divider.modulate = Color("405066")
+	row.add_child(divider)
 	var names := VBoxContainer.new()
 	names.size_flags_horizontal = SIZE_EXPAND_FILL
+	names.alignment = BoxContainer.ALIGN_CENTER
 	row.add_child(names)
 	room_label = Label.new()
-	room_label.add_color_override("font_color", CARBON)
-	room_label.add_font_override("font", _font(true, 32))
+	room_label.add_color_override("font_color", CLOUD)
+	room_label.add_font_override("font", _font(true, 30))
 	names.add_child(room_label)
 	detail_label = Label.new()
-	detail_label.add_color_override("font_color", Color("26364c"))
+	detail_label.add_color_override("font_color", Color("a7b4c8"))
 	detail_label.add_font_override("font", _font(false, 16))
 	names.add_child(detail_label)
 	state_label = Label.new()
@@ -50,9 +63,13 @@ func _ready() -> void:
 	clock_label.align = Label.ALIGN_RIGHT
 	clock_label.valign = Label.VALIGN_CENTER
 	clock_label.rect_min_size.x = 100
-	clock_label.add_color_override("font_color", CARBON)
+	clock_label.add_color_override("font_color", CLOUD)
 	clock_label.add_font_override("font", _font(true, 28))
 	row.add_child(clock_label)
+	corridor_ribbon = ColorRect.new()
+	corridor_ribbon.rect_min_size.y = 12
+	corridor_ribbon.mouse_filter = MOUSE_FILTER_IGNORE
+	column.add_child(corridor_ribbon)
 
 func configure(room: String, floor_name: String, state: String, clock: String, offline: bool) -> void:
 	room_label.text = room
@@ -69,9 +86,8 @@ func configure(room: String, floor_name: String, state: String, clock: String, o
 	box.corner_radius_bottom_left = 12
 	box.corner_radius_bottom_right = 12
 	state_label.add_stylebox_override("normal", box)
-	var strip := StyleBoxFlat.new()
-	strip.bg_color = CYAN if offline else colour
-	add_stylebox_override("panel", strip)
+	state_label.add_color_override("font_color", CARBON if state != "busy" else CLOUD)
+	corridor_ribbon.color = CYAN if offline else colour
 
 func _font(bold: bool, size: int) -> DynamicFont:
 	var font := DynamicFont.new()

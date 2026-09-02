@@ -24,7 +24,7 @@ func _ready() -> void:
 	var row := HBoxContainer.new()
 	row.add_constant_override("separation", 12)
 	margin.add_child(row)
-	var label := _label("PRESENTATION CONTROLS", 14, MUTED, true)
+	var label := _label("EMBEDDED INTELLIGENCE. MADE REAL.", 13, MUTED, true)
 	label.rect_min_size.x = 210
 	row.add_child(label)
 	for spec in [["Next beat  →", "next_requested"], ["No-show", "noshow_requested"], ["Offline", "offline_requested"], ["Reset", "reset_requested"]]:
