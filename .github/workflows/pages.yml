@@ -22,7 +22,7 @@ env:
 
 jobs:
   build:
-    runs-on: [self-hosted, esl-proxmox-runner]
+    runs-on: [self-hosted, Linux, X64]
     steps:
       - name: Check out source
         uses: actions/checkout@v6
@@ -73,7 +73,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: [self-hosted, esl-proxmox-runner]
+    runs-on: [self-hosted, Linux, X64]
     needs: build
     steps:
       - name: Deploy to GitHub Pages
