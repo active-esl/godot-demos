@@ -114,12 +114,23 @@ jobs:
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/room-booking \
             --export "Web" "$GITHUB_WORKSPACE/dist/room-booking/${booking_base}.html"
+          mkdir -p dist/embedded/room-booking
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/room-booking \
+            --export-pack "Embedded PCK" \
+            "$GITHUB_WORKSPACE/dist/embedded/room-booking/active-edge-room-booking.pck"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --main-pack "$GITHUB_WORKSPACE/dist/embedded/room-booking/active-edge-room-booking.pck" \
+            --no-window -s scripts/model_smoke.gd \
+            | tee "${RUNNER_TEMP}/room-booking-pack-smoke.log"
+          grep -q "ROOM_BOOKING_MODEL_SMOKE_OK" "${RUNNER_TEMP}/room-booking-pack-smoke.log"
           mv "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.html" \
             dist/elanco-manufacturing-digital-twin/index.html
           mv "dist/aero-pressure-digital-twin/${aero_base}.html" \
             dist/aero-pressure-digital-twin/index.html
           mv "dist/room-booking/${booking_base}.html" \
             dist/room-booking/index.html
+          cp demos/room-booking/data/calendar_day.json dist/room-booking/calendar_day.json
           test -s dist/index.html
           test -s dist/elanco-manufacturing-digital-twin/index.html
           test -s "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.wasm"
@@ -130,6 +141,8 @@ jobs:
           test -s dist/room-booking/index.html
           test -s "dist/room-booking/${booking_base}.wasm"
           test -s "dist/room-booking/${booking_base}.pck"
+          test -s dist/room-booking/calendar_day.json
+          test -s dist/embedded/room-booking/active-edge-room-booking.pck
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

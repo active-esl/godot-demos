@@ -12,12 +12,15 @@ var model
 var toast_label: Label
 var toast_timer: Timer
 var clock_timer: Timer
+var calendar_request: HTTPRequest
+var calendar_feed_url := ""
 
 func _ready() -> void:
 	model = BookingModelClass.new()
 	model.reset()
 	_build_toast()
 	_build_clock_timer()
+	_build_web_calendar_feed()
 	meeting_card.connect("checkin_requested", self, "_on_checkin")
 	meeting_card.connect("extend_requested", self, "_on_extend")
 	meeting_card.connect("end_requested", self, "_on_end")
@@ -122,10 +125,41 @@ func _build_clock_timer() -> void:
 func _on_clock_tick() -> void:
 	var calendar_changed: bool = model.reload_runtime_day()
 	var clock_changed: bool = model.sync_clock()
+	_request_web_calendar()
 	if calendar_changed:
 		_show_toast("Google Calendar updated")
 	if calendar_changed or clock_changed:
 		_refresh()
+
+func _build_web_calendar_feed() -> void:
+	if not OS.has_feature("HTML5"):
+		return
+	calendar_request = HTTPRequest.new()
+	calendar_request.connect("request_completed", self, "_on_web_calendar_received")
+	add_child(calendar_request)
+	var href := str(JavaScript.eval("window.location.href", true)).split("#")[0].split("?")[0]
+	calendar_feed_url = href.get_base_dir().plus_file("calendar_day.json")
+	call_deferred("_request_web_calendar")
+
+func _request_web_calendar() -> void:
+	if calendar_request == null or model.offline or calendar_feed_url == "":
+		return
+	calendar_request.request(calendar_feed_url + "?t=" + str(OS.get_unix_time()))
+
+func _on_web_calendar_received(result: int, response_code: int, _headers: PoolStringArray, body: PoolByteArray) -> void:
+	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+		return
+	var parsed = JSON.parse(body.get_string_from_utf8())
+	if parsed.error != OK or typeof(parsed.result) != TYPE_DICTIONARY:
+		return
+	var before: String = to_json(model.bookings) + model.schedule_day
+	if not model.apply_day(parsed.result):
+		return
+	model.sync_clock()
+	var changed: bool = to_json(model.bookings) + model.schedule_day != before
+	if changed:
+		_show_toast("Google Calendar updated")
+	_refresh()
 
 func _show_toast(message: String) -> void:
 	toast_label.text = message

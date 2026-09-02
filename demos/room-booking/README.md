@@ -34,6 +34,11 @@ meeting state and agenda without restarting; see `packaging/systemd/`.
 godot3 --video-driver GLES2 --path .
 ```
 
+The embedded screen does not run this source tree. CI exports
+`dist/embedded/room-booking/active-edge-room-booking.pck`, which is launched by
+the supplied systemd service with `--fullscreen`. This ensures PNGs, fonts and
+other source assets are imported before reaching the `tools=no` FRT runtime.
+
 This is a host/web UI proof. It is not evidence of operation on an EVK or
 production panel, and it does not claim certification by or live integration
 with a third-party booking platform.

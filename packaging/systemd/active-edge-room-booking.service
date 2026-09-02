@@ -1,0 +1,25 @@
+[Unit]
+Description=Active-Edge fullscreen room-booking display
+After=weston.service network-online.target
+Requires=weston.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=weston
+Group=weston
+Environment=XDG_RUNTIME_DIR=/run
+Environment=WAYLAND_DISPLAY=wayland-0
+Environment=AESL_ROOM_BOOKING_CALENDAR_PATH=/var/lib/active-edge-room-booking/calendar_day.json
+ExecStart=/usr/bin/godot3 --main-pack /opt/active-edge-room-booking/active-edge-room-booking.pck --video-driver GLES2 --fullscreen
+Restart=on-failure
+RestartSec=2s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadOnlyPaths=/opt/active-edge-room-booking
+ReadWritePaths=/var/lib/active-edge-room-booking
+
+[Install]
+WantedBy=graphical.target

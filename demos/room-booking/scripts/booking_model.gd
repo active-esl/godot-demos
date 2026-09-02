@@ -27,15 +27,20 @@ func load_day(path: String) -> bool:
 	file.close()
 	if parsed.error != OK or typeof(parsed.result) != TYPE_DICTIONARY:
 		return false
-	room_name = str(parsed.result.get("room", room_name))
-	floor_name = str(parsed.result.get("floor", floor_name))
-	bookings = parsed.result.get("bookings", []).duplicate(true)
+	return apply_day(parsed.result)
+
+func apply_day(day: Dictionary) -> bool:
+	if typeof(day.get("bookings", [])) != TYPE_ARRAY:
+		return false
+	room_name = str(day.get("room", room_name))
+	floor_name = str(day.get("floor", floor_name))
+	bookings = day.get("bookings", []).duplicate(true)
 	bookings.sort_custom(self, "_sort_booking")
-	source = str(parsed.result.get("source", "fixture"))
-	timezone_name = str(parsed.result.get("timezone", "Europe/London"))
-	utc_offset_minutes = int(parsed.result.get("utc_offset_minutes", 0))
-	schedule_day = str(parsed.result.get("day", ""))
-	synced_at = str(parsed.result.get("synced_at", ""))
+	source = str(day.get("source", "fixture"))
+	timezone_name = str(day.get("timezone", "Europe/London"))
+	utc_offset_minutes = int(day.get("utc_offset_minutes", 0))
+	schedule_day = str(day.get("day", ""))
+	synced_at = str(day.get("synced_at", ""))
 	return true
 
 func reset(use_live_clock: bool = true) -> void:
@@ -55,10 +60,10 @@ func reload_runtime_day() -> bool:
 		return false
 	var configured := OS.get_environment("AESL_ROOM_BOOKING_CALENDAR_PATH")
 	var path := configured if configured != "" else runtime_calendar_path
-	var before := synced_at
+	var before := to_json(bookings) + schedule_day
 	if not load_day(path):
 		return false
-	return synced_at != before
+	return to_json(bookings) + schedule_day != before
 
 func sync_clock() -> bool:
 	if simulated_clock:
