@@ -25,6 +25,7 @@ var sensor_markers = []
 var sensor_values = []
 var selected_sensor = 0
 var dragging = false
+var orbit_input_reported = false
 var drag_origin = Vector2()
 var yaw_origin = 0.0
 var pitch_origin = 0.0
@@ -125,6 +126,9 @@ func build_ui():
 	add_child(layer)
 	var root = Control.new()
 	root.set_anchors_and_margins_preset(Control.PRESET_WIDE)
+	# This overlay only lays out the HUD. It must not consume touches over the
+	# uncovered 3D viewport; its button/slider children retain normal filtering.
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(root)
 
 	var header = PanelContainer.new()
@@ -260,6 +264,9 @@ func _unhandled_input(event):
 		orbit_from_delta(event.position - drag_origin)
 
 func orbit_from_delta(delta):
+	if not orbit_input_reported and delta.length_squared() > 4.0:
+		orbit_input_reported = true
+		print("AERO_TOUCH_ORBIT_ACTIVE")
 	yaw = yaw_origin - delta.x * 0.006
 	pitch = clamp(pitch_origin - delta.y * 0.004, -1.15, 0.18)
 	update_camera()
