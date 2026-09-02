@@ -25,6 +25,10 @@ var batch = 64.0
 var mixing = true
 var drag_start = Vector2()
 var dragging = false
+var process_liquids = []
+var process_agitators = []
+var process_bubbles = []
+var process_vials = []
 
 func _ready():
 	regular = load("res://fonts/DejaVuSans.ttf")
@@ -124,7 +128,7 @@ func process_card(index, title, subtitle, metric_name, unit, accent):
 	margin.add_child(box)
 	box.add_child(label(title, 23, DARK, true))
 	box.add_child(label(subtitle, 18, MUTED))
-	box.add_child(machine(index, accent))
+	box.add_child(machine(index, accent, "process"))
 	box.add_child(label(metric_name, 15, MUTED, true))
 	var value_row = HBoxContainer.new()
 	var value = label("--", 35, DARK, true)
@@ -142,7 +146,7 @@ func process_card(index, title, subtitle, metric_name, unit, accent):
 	live["gauge%d" % index] = bar
 	return panel
 
-func machine(kind, accent):
+func machine(kind, accent, scope = ""):
 	var frame = CenterContainer.new()
 	frame.rect_min_size.y = 230
 	frame.size_flags_vertical = SIZE_EXPAND_FILL
@@ -151,7 +155,9 @@ func machine(kind, accent):
 	frame.add_child(machine)
 	if kind < 2:
 		machine.add_child(at(rect(Color("e4edf1")), 55, 14, 170, 165))
-		machine.add_child(at(rect(Color(accent.r, accent.g, accent.b, 0.42)), 67, 102, 146, 65))
+		var liquid = at(rect(Color(accent.r, accent.g, accent.b, 0.42)), 67, 102, 146, 65)
+		liquid.set_meta("kind", kind)
+		machine.add_child(liquid)
 		machine.add_child(at(rect(PURPLE), 134, 0, 12, 135))
 		machine.add_child(at(rect(INK), 42, 179, 196, 14))
 		machine.add_child(at(rect(INK), 65, 193, 12, 17))
@@ -160,13 +166,31 @@ func machine(kind, accent):
 			var agitator = at(rect(accent), 90, 129, 100, 12)
 			agitator.rect_pivot_offset = Vector2(50, 6)
 			machine.add_child(agitator)
-			live["agitator"] = agitator
+			if scope == "process":
+				process_agitators.append(agitator)
+			else:
+				live["asset_agitator"] = agitator
+		if scope == "process":
+			process_liquids.append(liquid)
+			for phase in [0.0, 0.33, 0.66]:
+				var bubble = at(rect(Color(1, 1, 1, 0.72)), 86 + int(phase * 105), 142, 9, 9)
+				bubble.set_meta("phase", phase)
+				bubble.set_meta("kind", kind)
+				machine.add_child(bubble)
+				process_bubbles.append(bubble)
 	else:
 		machine.add_child(at(rect(INK), 20, 164, 240, 16))
 		machine.add_child(at(rect(PURPLE), 75, 20, 130, 72))
-		for x in [48, 103, 158, 213]:
-			machine.add_child(at(rect(Color("c9e7eb")), x, 112, 25, 52))
-			machine.add_child(at(rect(AQUA), x + 4, 103, 17, 9))
+		var vial_index = 0
+		for x in [32, 87, 142, 197]:
+			var vial = at(Control.new(), x, 103, 25, 61)
+			vial.add_child(at(rect(AQUA), 4, 0, 17, 9))
+			vial.add_child(at(rect(Color("c9e7eb")), 0, 9, 25, 52))
+			vial.set_meta("phase", float(vial_index) * 55.0)
+			machine.add_child(vial)
+			if scope == "process":
+				process_vials.append(vial)
+			vial_index += 1
 	return frame
 
 func asset_page():
@@ -178,7 +202,7 @@ func asset_page():
 	var asset = section(500)
 	var abox = asset.get_node("Margin/Content")
 	abox.add_child(label("LIVE DIGITAL ASSET", 18, MUTED, true))
-	abox.add_child(machine(1, AQUA))
+	abox.add_child(machine(1, AQUA, "asset"))
 	var state = pill("AGITATOR  •  RUNNING", GREEN, 350)
 	abox.add_child(state)
 	live["state"] = state.get_node("Text")
@@ -451,7 +475,9 @@ func _process(delta):
 	elapsed += delta
 	if mixing:
 		batch = fmod(batch + delta * 0.16, 100.0)
-		live["agitator"].rect_rotation = fmod(elapsed * 110.0, 360.0)
+		live["asset_agitator"].rect_rotation = fmod(elapsed * 110.0, 360.0)
+		for agitator in process_agitators:
+			agitator.rect_rotation = fmod(elapsed * 150.0, 360.0)
 	var level = 72.0 + sin(elapsed * 0.45) * 2.0
 	var temperature = live["slider"].value + sin(elapsed * 0.7) * 0.3
 	var throughput = 118.0 + sin(elapsed * 0.8) * 4.0
@@ -465,6 +491,22 @@ func _process(delta):
 	live["speed"].text = "%d rpm" % (420 if mixing else 0)
 	live["speed_bar"].value = 70 if mixing else 0
 	live["oxygen"].text = "%.1f%%" % (46.8 + sin(elapsed * 0.31) * 1.2)
+	animate_process_machinery(level)
+
+func animate_process_machinery(level):
+	for liquid in process_liquids:
+		var fraction = level / 100.0 if liquid.get_meta("kind") == 0 else 0.66 + sin(elapsed * 0.55) * 0.035
+		var height = 145.0 * fraction
+		liquid.rect_position.y = 167.0 - height
+		liquid.rect_size.y = height
+	for bubble in process_bubbles:
+		var phase = bubble.get_meta("phase")
+		var direction = -1.0 if bubble.get_meta("kind") == 1 else 1.0
+		var travel = fmod(elapsed * 0.34 + phase, 1.0)
+		bubble.rect_position.y = 42.0 + (travel if direction > 0 else 1.0 - travel) * 105.0
+		bubble.modulate.a = sin(travel * PI)
+	for vial in process_vials:
+		vial.rect_position.x = 25.0 + fmod(elapsed * 48.0 + vial.get_meta("phase"), 220.0)
 
 func process_value(index, value, maximum, text):
 	live["value%d" % index].text = text
