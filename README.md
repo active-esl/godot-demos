@@ -11,10 +11,15 @@ independently while sharing a consistent engineering baseline.
 | Demo | Engine | Purpose | Try it |
 |------|--------|---------|--------|
 | [Elanco manufacturing digital twin](demos/elanco-manufacturing-digital-twin/) | Godot 3.6 / GLES2 | Simulated factory process, asset and quality views | [Web demo](https://active-esl.github.io/godot-demos/elanco-manufacturing-digital-twin/) |
+| [Aero pressure digital twin](demos/aero-pressure-digital-twin/) | Godot 3.6 / GLES2 | Touch-orbitable single-seater, virtual airflow and simulated pressure telemetry | [Web demo](https://active-esl.github.io/godot-demos/aero-pressure-digital-twin/) |
 
 The Elanco-themed demonstrator uses simulated data and public themes. It is an
 unofficial concept: it is not connected to an Elanco site or production system,
 and no endorsement or access to Elanco systems is implied.
+
+The aero demonstrator is deliberately customer-anonymous. Its procedural car,
+pressure zones and values are fictional and do not reproduce any customer
+vehicle, geometry, installation or dataset.
 
 ## Repository layout
 
@@ -38,7 +43,7 @@ Shared code or assets should only be promoted into a top-level `shared/`
 directory after at least two demos genuinely use them. This keeps demos easy to
 copy, deploy and test independently without premature coupling.
 
-## Current demo
+## Current demos
 
 The manufacturing digital twin provides:
 
@@ -46,6 +51,14 @@ The manufacturing digital twin provides:
 2. Reactor detail with simulated live conditions, setpoint and agitator control.
 3. Quality, yield, energy and water performance views.
 4. Touch buttons and horizontal swipe navigation.
+
+The aero pressure digital twin provides:
+
+1. An orbitable procedural 3D single-seater in a virtual wind tunnel.
+2. Animated flow streaks which respond to tunnel speed and vehicle position.
+3. Eight simulated pressure zones informed by our high-rate distributed MEMS
+   sensor work.
+4. Touch controls for orbiting, viewpoints, wind speed and zone selection.
 
 Its UI is built from Godot `Control` nodes, containers and standard interactive
 controls. It targets a 1920×1200 landscape display; physical panel orientation
