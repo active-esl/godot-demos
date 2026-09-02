@@ -73,7 +73,7 @@ func _on_book_now() -> void:
 	_refresh()
 
 func _on_book_slot(start_min: int) -> void:
-	_show_toast("Booked at %s" % model.format_time(start_min) if model.book_at(start_min) else "That slot is unavailable")
+	_show_toast("Local preview · booked at %s" % model.format_time(start_min) if model.book_at(start_min) else "That slot is unavailable")
 	_refresh()
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -114,13 +114,17 @@ func _build_toast() -> void:
 
 func _build_clock_timer() -> void:
 	clock_timer = Timer.new()
-	clock_timer.wait_time = 15.0
+	clock_timer.wait_time = 8.0
 	clock_timer.connect("timeout", self, "_on_clock_tick")
 	add_child(clock_timer)
 	clock_timer.start()
 
 func _on_clock_tick() -> void:
-	if model.sync_clock():
+	var calendar_changed: bool = model.reload_runtime_day()
+	var clock_changed: bool = model.sync_clock()
+	if calendar_changed:
+		_show_toast("Google Calendar updated")
+	if calendar_changed or clock_changed:
 		_refresh()
 
 func _show_toast(message: String) -> void:

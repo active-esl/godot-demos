@@ -12,6 +12,12 @@ Google credential, calendar identifier or original Google event identifier.
 The deployment refreshes every five minutes and the panel clock advances from
 real UTC time using the calendar's `Europe/London` offset.
 
+On the physical Linux screen, the service-account JSON is provisioned outside
+the application under `/etc/active-edge-room-booking/`. A restricted systemd
+timer fetches the calendar every eight seconds and atomically updates the local
+schedule. The running Godot process detects each new snapshot and refreshes the
+meeting state and agenda without restarting; see `packaging/systemd/`.
+
 ## Interaction
 
 - The default display uses live room time and selects the current or next event.

@@ -1,0 +1,20 @@
+[Unit]
+Description=Active-Edge room display Google Calendar snapshot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=active-edge-room-booking
+Group=active-edge-room-booking
+Environment=AESL_ROOM_DISPLAY_GCAL_SA_JSON_PATH=/etc/active-edge-room-booking/gcal-sa.json
+ExecStart=/opt/active-edge-room-booking/.venv/bin/python /opt/active-edge-room-booking/scripts/gcal_export.py --output /var/lib/active-edge-room-booking/calendar_day.json
+StateDirectory=active-edge-room-booking
+ConfigurationDirectory=active-edge-room-booking
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/active-edge-room-booking
+

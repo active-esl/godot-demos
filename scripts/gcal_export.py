@@ -17,6 +17,7 @@ CONFIG = ROOT / "scripts" / "gcal_config.json"
 OUTPUT = ROOT / "demos" / "room-booking" / "data" / "calendar_day.json"
 FIXTURE = ROOT / "scripts" / "fixtures" / "google_events.json"
 SECRET_ENV = "AESL_ROOM_DISPLAY_GCAL_SA_JSON"
+SECRET_PATH_ENV = "AESL_ROOM_DISPLAY_GCAL_SA_JSON_PATH"
 SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 
 
@@ -82,8 +83,11 @@ def normalize(items: list[dict[str, Any]], cfg: dict[str, Any], day: date, sourc
 
 def _google_items(cfg: dict[str, Any], day: date) -> list[dict[str, Any]]:
     raw = os.environ.get(SECRET_ENV, "")
+    secret_path = os.environ.get(SECRET_PATH_ENV, "")
+    if not raw and secret_path:
+        raw = Path(secret_path).read_text()
     if not raw:
-        raise RuntimeError(f"{SECRET_ENV} is not set")
+        raise RuntimeError(f"set {SECRET_ENV} or {SECRET_PATH_ENV}")
     from google.oauth2 import service_account
     from googleapiclient.discovery import build
 
@@ -132,7 +136,9 @@ def main() -> None:
         source = "google"
     output = normalize(items, cfg, selected_day, source)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(output, indent=2, ensure_ascii=False) + "\n")
+    temporary = args.output.with_suffix(args.output.suffix + ".tmp")
+    temporary.write_text(json.dumps(output, indent=2, ensure_ascii=False) + "\n")
+    os.replace(temporary, args.output)
     print(f"exported {len(output['bookings'])} room events for {selected_day} -> {args.output}")
 
 

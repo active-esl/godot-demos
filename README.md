@@ -94,6 +94,10 @@ The room-booking export refreshes its read-only, privacy-minimised Google
 Calendar snapshot every five minutes. Calendar credentials remain in GitHub
 Actions and are never included in the downloadable web application.
 
+The native screen build instead reads an eight-second local snapshot generated
+by a restricted systemd service. Its Google credential is provisioned onto the
+device separately from the Godot application and is never committed or packed.
+
 ## Licensing
 
 Demo code is MIT licensed unless a demo directory states otherwise. Bundled

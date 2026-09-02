@@ -17,6 +17,7 @@ var utc_offset_minutes := 0
 var schedule_day := ""
 var synced_at := ""
 var simulated_clock := false
+var runtime_calendar_path := "/var/lib/active-edge-room-booking/calendar_day.json"
 
 func load_day(path: String) -> bool:
 	var file := File.new()
@@ -44,9 +45,20 @@ func reset(use_live_clock: bool = true) -> void:
 	if not load_day("res://data/calendar_day.json"):
 		load_day("res://data/mock_day.json")
 	if use_live_clock:
+		reload_runtime_day()
 		sync_clock()
 	else:
 		now_min = BEATS[0]
+
+func reload_runtime_day() -> bool:
+	if offline or OS.has_feature("HTML5"):
+		return false
+	var configured := OS.get_environment("AESL_ROOM_BOOKING_CALENDAR_PATH")
+	var path := configured if configured != "" else runtime_calendar_path
+	var before := synced_at
+	if not load_day(path):
+		return false
+	return synced_at != before
 
 func sync_clock() -> bool:
 	if simulated_clock:
@@ -157,7 +169,7 @@ func sync_label() -> String:
 	if offline:
 		return "Offline · cached agenda"
 	if source == "google":
-		return "Google Calendar · %s" % timezone_name
+		return "Google Calendar live · %s" % timezone_name
 	return "Demo calendar · %s" % timezone_name
 
 func is_live_calendar() -> bool:
