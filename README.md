@@ -90,6 +90,10 @@ are checksum-verified and cached on self-hosted runners. As more demos are added
 CI should build each affected demo independently and assemble their outputs into
 one Pages artefact rather than coupling all projects into a single Godot export.
 
+Changes to `main` are made through pull requests. Each pull request runs the
+Godot web-export checks and is included in the existing AESL Preloop pull-request
+review flow; Pages deployment remains limited to changes merged into `main`.
+
 ## Licensing
 
 Demo code is MIT licensed unless a demo directory states otherwise. Bundled
