@@ -16,6 +16,9 @@ var calendar_request: HTTPRequest
 var calendar_feed_url := ""
 var web_pointer_callback = null
 var web_pointer_sequence := 0
+var local_mutation_sequence := 0
+var calendar_request_local_sequence := 0
+var last_calendar_payload := ""
 
 func _ready() -> void:
 	model = BookingModelClass.new()
@@ -100,38 +103,49 @@ func _on_next() -> void:
 	_refresh()
 
 func _on_noshow() -> void:
+	_mark_local_mutation()
 	_show_toast("No-show auto-release applied" if model.demo_noshow() else "No unchecked booking to release")
 	_refresh()
 
 func _on_offline() -> void:
+	_mark_local_mutation()
 	model.offline = not model.offline
 	_show_toast("Offline · showing cached agenda" if model.offline else "Back online · agenda synced")
 	_refresh()
 
 func _on_reset() -> void:
+	_mark_local_mutation()
 	model.reset()
 	_show_toast("Live room time restored")
 	_refresh()
 
 func _on_checkin() -> void:
+	_mark_local_mutation()
 	_show_toast("Local preview · checked in" if model.check_in() else "Check-in is not available")
 	_refresh()
 
 func _on_extend() -> void:
+	_mark_local_mutation()
 	_show_toast("Local preview · extended by 15 minutes" if model.extend_current() else "Extension blocked by the next booking")
 	_refresh()
 
 func _on_end() -> void:
+	_mark_local_mutation()
 	_show_toast("Local preview · room released" if model.end_current() else "There is no meeting to end")
 	_refresh()
 
 func _on_book_now() -> void:
+	_mark_local_mutation()
 	_show_toast("Local preview · booked for 30 minutes" if model.book_now() else "That time is unavailable")
 	_refresh()
 
 func _on_book_slot(start_min: int) -> void:
+	_mark_local_mutation()
 	_show_toast("Local preview · booked at %s" % model.format_time(start_min) if model.book_at(start_min) else "That slot is unavailable")
 	_refresh()
+
+func _mark_local_mutation() -> void:
+	local_mutation_sequence += 1
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not event is InputEventKey or not event.pressed or event.echo: return
@@ -198,12 +212,22 @@ func _build_web_calendar_feed() -> void:
 func _request_web_calendar() -> void:
 	if calendar_request == null or model.offline or calendar_feed_url == "":
 		return
+	calendar_request_local_sequence = local_mutation_sequence
 	calendar_request.request(calendar_feed_url + "?t=" + str(OS.get_unix_time()))
 
 func _on_web_calendar_received(result: int, response_code: int, _headers: PoolStringArray, body: PoolByteArray) -> void:
 	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
 		return
-	var parsed = JSON.parse(body.get_string_from_utf8())
+	var payload := body.get_string_from_utf8()
+	if payload == last_calendar_payload:
+		return
+	last_calendar_payload = payload
+	# A response may have started before a physical tap. Remember the payload,
+	# but never let that stale response erase a local preview action. Repeated
+	# polls of the unchanged feed are ignored as well.
+	if local_mutation_sequence != calendar_request_local_sequence:
+		return
+	var parsed = JSON.parse(payload)
 	if parsed.error != OK or typeof(parsed.result) != TYPE_DICTIONARY:
 		return
 	var before: String = to_json(model.bookings) + model.schedule_day
