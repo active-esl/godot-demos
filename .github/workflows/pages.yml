@@ -69,13 +69,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p dist
+          mkdir -p dist/elanco-manufacturing-digital-twin
+          cp -R site/. dist/
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/elanco-manufacturing-digital-twin \
-            --export "Web" "$GITHUB_WORKSPACE/dist/index.html"
+            --export "Web" "$GITHUB_WORKSPACE/dist/elanco-manufacturing-digital-twin/index.html"
           test -s dist/index.html
-          test -s dist/index.wasm
-          test -s dist/index.pck
+          test -s dist/elanco-manufacturing-digital-twin/index.html
+          test -s dist/elanco-manufacturing-digital-twin/index.wasm
+          test -s dist/elanco-manufacturing-digital-twin/index.pck
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

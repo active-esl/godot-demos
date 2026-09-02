@@ -10,7 +10,7 @@ independently while sharing a consistent engineering baseline.
 
 | Demo | Engine | Purpose | Try it |
 |------|--------|---------|--------|
-| [Elanco manufacturing digital twin](demos/elanco-manufacturing-digital-twin/) | Godot 3.6 / GLES2 | Simulated factory process, asset and quality views | [Web demo](https://active-esl.github.io/godot-demos/) |
+| [Elanco manufacturing digital twin](demos/elanco-manufacturing-digital-twin/) | Godot 3.6 / GLES2 | Simulated factory process, asset and quality views | [Web demo](https://active-esl.github.io/godot-demos/elanco-manufacturing-digital-twin/) |
 
 The Elanco-themed demonstrator uses simulated data and public themes. It is an
 unofficial concept: it is not connected to an Elanco site or production system,
@@ -25,6 +25,7 @@ demos/
     Main.tscn
     ...
 .github/workflows/    build and publication automation
+site/                  static catalogue landing page
 dist/                 generated Pages output; never source
 ```
 
@@ -69,11 +70,11 @@ godot3 --video-driver GLES2 --path demos/elanco-manufacturing-digital-twin
 
 ## CI and publication
 
-The current workflow exports the first Godot 3 demo and publishes it to GitHub
-Pages. The pinned exporter and templates are checksum-verified and cached on
-self-hosted runners. As more demos are added, CI should build each affected demo
-independently and assemble their outputs into one Pages artefact rather than
-coupling all projects into a single Godot export.
+The current workflow publishes the catalogue at the Pages root and exports each
+Godot demo beneath its own stable sub-path. The pinned exporter and templates
+are checksum-verified and cached on self-hosted runners. As more demos are added,
+CI should build each affected demo independently and assemble their outputs into
+one Pages artefact rather than coupling all projects into a single Godot export.
 
 ## Licensing
 
