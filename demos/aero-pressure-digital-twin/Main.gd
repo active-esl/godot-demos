@@ -28,9 +28,14 @@ var sensor_value_labels = []
 var selected_sensor = 0
 var dragging = false
 var orbit_input_reported = false
+var zoom_input_reported = false
 var drag_origin = Vector2()
 var yaw_origin = 0.0
 var pitch_origin = 0.0
+var touch_points = {}
+var pinching = false
+var pinch_origin_distance = 0.0
+var pinch_origin_camera_distance = 0.0
 var speed_value
 var pressure_value
 var delta_value
@@ -155,7 +160,7 @@ func build_ui():
 	hr.add_child(titles)
 	hr.add_child(pill("●  8 PRESSURE ZONES ONLINE", LIME, 330))
 
-	var hint = pill("DRAG TO ORBIT  •  TOUCH CONTROLS", CYAN, 390)
+	var hint = pill("DRAG TO ORBIT  •  PINCH TO ZOOM", CYAN, 410)
 	hint.anchor_left = 0.025
 	hint.anchor_top = 0.12
 	hint.rect_position.y = 18
@@ -277,29 +282,63 @@ func _input(event):
 	# that begin in the 3D viewport so the controls column remains interactive.
 	if event is InputEventScreenTouch:
 		if event.pressed and orbit_region_has_point(event.position):
-			dragging = true
-			drag_origin = event.position
-			yaw_origin = yaw
-			pitch_origin = pitch
+			touch_points[event.index] = event.position
+			if touch_points.size() == 1:
+				begin_orbit(event.position)
+			elif touch_points.size() == 2:
+				begin_pinch()
 		elif not event.pressed:
-			dragging = false
-	elif event is InputEventScreenDrag and dragging:
-		orbit_from_delta(event.position - drag_origin)
+			touch_points.erase(event.index)
+			pinching = false
+			if touch_points.size() == 1:
+				begin_orbit(touch_points.values()[0])
+			else:
+				dragging = false
+	elif event is InputEventScreenDrag and touch_points.has(event.index):
+		touch_points[event.index] = event.position
+		if touch_points.size() >= 2:
+			if not pinching:
+				begin_pinch()
+			zoom_from_pinch()
+		elif dragging:
+			orbit_from_delta(event.position - drag_origin)
 		get_tree().set_input_as_handled()
 	elif event is InputEventMouseButton and event.button_index == BUTTON_LEFT:
-		if event.pressed and orbit_region_has_point(event.position):
-			dragging = true
-			drag_origin = event.position
-			yaw_origin = yaw
-			pitch_origin = pitch
-		else:
-			dragging = false
-	elif event is InputEventMouseMotion and dragging:
+		if touch_points.empty():
+			if event.pressed and orbit_region_has_point(event.position):
+				begin_orbit(event.position)
+			else:
+				dragging = false
+	elif event is InputEventMouseMotion and dragging and touch_points.empty():
 		orbit_from_delta(event.position - drag_origin)
 		get_tree().set_input_as_handled()
 
 func orbit_region_has_point(position):
 	return position.x < get_viewport().size.x * 0.75 and position.y > 112.0
+
+func begin_orbit(position):
+	dragging = true
+	drag_origin = position
+	yaw_origin = yaw
+	pitch_origin = pitch
+
+func begin_pinch():
+	var points = touch_points.values()
+	pinch_origin_distance = points[0].distance_to(points[1])
+	pinch_origin_camera_distance = distance
+	pinching = pinch_origin_distance > 1.0
+	dragging = false
+
+func zoom_from_pinch():
+	var points = touch_points.values()
+	var current_distance = points[0].distance_to(points[1])
+	if not pinching or current_distance <= 1.0:
+		return
+	if not zoom_input_reported and abs(current_distance - pinch_origin_distance) > 4.0:
+		zoom_input_reported = true
+		print("AERO_TOUCH_ZOOM_ACTIVE")
+	distance = clamp(pinch_origin_camera_distance * pinch_origin_distance / current_distance, 6.0, 16.0)
+	update_camera()
 
 func orbit_from_delta(delta):
 	if not orbit_input_reported and delta.length_squared() > 4.0:
