@@ -241,9 +241,12 @@ func _process(delta):
 		sensor_markers[i].scale = Vector3.ONE * (1.0 + intensity * 0.42 + sin(elapsed * 3.0 + i) * 0.06)
 	update_readings(q)
 
-func _unhandled_input(event):
+func _input(event):
+	# The FRT/Wayland touchscreen also generates pointer events for Control
+	# nodes. Observe the stream before GUI dispatch, but only claim gestures
+	# that begin in the 3D viewport so the controls column remains interactive.
 	if event is InputEventScreenTouch:
-		if event.pressed and event.position.x < get_viewport().size.x * 0.75:
+		if event.pressed and orbit_region_has_point(event.position):
 			dragging = true
 			drag_origin = event.position
 			yaw_origin = yaw
@@ -252,8 +255,9 @@ func _unhandled_input(event):
 			dragging = false
 	elif event is InputEventScreenDrag and dragging:
 		orbit_from_delta(event.position - drag_origin)
+		get_tree().set_input_as_handled()
 	elif event is InputEventMouseButton and event.button_index == BUTTON_LEFT:
-		if event.pressed and event.position.x < get_viewport().size.x * 0.75:
+		if event.pressed and orbit_region_has_point(event.position):
 			dragging = true
 			drag_origin = event.position
 			yaw_origin = yaw
@@ -262,6 +266,10 @@ func _unhandled_input(event):
 			dragging = false
 	elif event is InputEventMouseMotion and dragging:
 		orbit_from_delta(event.position - drag_origin)
+		get_tree().set_input_as_handled()
+
+func orbit_region_has_point(position):
+	return position.x < get_viewport().size.x * 0.75 and position.y > 112.0
 
 func orbit_from_delta(delta):
 	if not orbit_input_reported and delta.length_squared() > 4.0:
