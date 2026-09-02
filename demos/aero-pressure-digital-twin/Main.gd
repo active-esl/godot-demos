@@ -313,6 +313,7 @@ func _input(event):
 		get_tree().set_input_as_handled()
 	elif event is InputEventMouseButton:
 		if event.pressed and orbit_region_has_point(event.position) and event.button_index in [BUTTON_WHEEL_UP, BUTTON_WHEEL_DOWN]:
+			deselect_sensor()
 			var zoom_step = 0.88 if event.button_index == BUTTON_WHEEL_UP else 1.12
 			distance = clamp(distance * zoom_step, 6.0, 16.0)
 			update_camera()
@@ -361,6 +362,8 @@ func zoom_from_pinch():
 	var current_distance = points[0].distance_to(points[1])
 	if not pinching or current_distance <= 1.0:
 		return
+	if abs(current_distance - pinch_origin_distance) > 4.0:
+		deselect_sensor()
 	if not zoom_input_reported and abs(current_distance - pinch_origin_distance) > 4.0:
 		zoom_input_reported = true
 		print("AERO_TOUCH_ZOOM_ACTIVE")
@@ -368,6 +371,8 @@ func zoom_from_pinch():
 	update_camera()
 
 func orbit_from_delta(delta):
+	if delta.length_squared() > 4.0:
+		deselect_sensor()
 	if not orbit_input_reported and delta.length_squared() > 4.0:
 		orbit_input_reported = true
 		print("AERO_TOUCH_ORBIT_ACTIVE")
@@ -398,6 +403,18 @@ func select_sensor(index):
 		marker_material.albedo_color = LIME if i == index else CYAN
 	print("AERO_SENSOR_SELECTED zone=%02d name=%s" % [index + 1, sensor_names[index]])
 
+func deselect_sensor():
+	if selected_sensor < 0:
+		return
+	selected_sensor = -1
+	for i in range(sensor_buttons.size()):
+		sensor_buttons[i].modulate = Color(0.72, 0.80, 0.88, 1)
+		sensor_buttons[i].text = "  %02d %s" % [i + 1, sensor_names[i]]
+		sensor_buttons[i].add_stylebox_override("normal", panel_style(PANEL_LIGHT, Color(0.16, 0.35, 0.50, 1), 7, 1))
+		var marker_material = sensor_markers[i].material_override
+		marker_material.albedo_color = CYAN
+	print("AERO_SENSOR_DESELECTED camera_gesture=true")
+
 func set_view(new_yaw, new_pitch):
 	yaw = new_yaw
 	pitch = new_pitch
@@ -406,12 +423,17 @@ func set_view(new_yaw, new_pitch):
 func update_readings(q):
 	if speed_value == null:
 		return
+	speed_value.text = "%d km/h" % int(tunnel_speed)
+	load_value.text = "%.2f ×" % q
+	if selected_sensor < 0:
+		pressure_value.text = "—"
+		delta_value.text = "SELECT A ZONE"
+		status_value.text = "480 Hz  •  ALL ZONES"
+		return
 	var selected = sensor_values[selected_sensor]
 	var dp = selected - 101325.0
-	speed_value.text = "%d km/h" % int(tunnel_speed)
 	pressure_value.text = "%.3f kPa" % (selected / 1000.0)
 	delta_value.text = "Z%02d  %+.2f kPa" % [selected_sensor + 1, dp / 1000.0]
-	load_value.text = "%.2f ×" % q
 	status_value.text = "480 Hz  •  Z%02d" % (selected_sensor + 1)
 
 func part(mesh, position, mat, scale_value = Vector3.ONE):
