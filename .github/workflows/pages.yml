@@ -23,16 +23,19 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      XDG_DATA_HOME: ${{ runner.temp }}/xdg-data
-      XDG_CONFIG_HOME: ${{ runner.temp }}/xdg-config
-      XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
     steps:
       - name: Check out source
         uses: actions/checkout@v6
 
       - name: Configure Pages
         uses: actions/configure-pages@v6
+
+      - name: Configure Godot paths
+        shell: bash
+        run: |
+          echo "XDG_DATA_HOME=${RUNNER_TEMP}/xdg-data" >> "$GITHUB_ENV"
+          echo "XDG_CONFIG_HOME=${RUNNER_TEMP}/xdg-config" >> "$GITHUB_ENV"
+          echo "XDG_CACHE_HOME=${RUNNER_TEMP}/xdg-cache" >> "$GITHUB_ENV"
 
       - name: Install pinned Godot 3 exporter
         shell: bash
