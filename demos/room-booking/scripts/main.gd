@@ -15,6 +15,7 @@ var clock_timer: Timer
 var calendar_request: HTTPRequest
 var calendar_feed_url := ""
 var web_pointer_callback = null
+var web_pointer_sequence := 0
 
 func _ready() -> void:
 	model = BookingModelClass.new()
@@ -51,13 +52,29 @@ func _on_web_pointer_tap(args: Array) -> void:
 		return
 	var viewport_size := get_viewport_rect().size
 	var position := Vector2(clamp(float(args[0]), 0.0, 1.0) * viewport_size.x, clamp(float(args[1]), 0.0, 1.0) * viewport_size.y)
+	var motion := InputEventMouseMotion.new()
+	motion.position = position
+	motion.global_position = position
+	Input.parse_input_event(motion)
 	var press := InputEventMouseButton.new()
 	press.button_index = BUTTON_LEFT
 	press.position = position
 	press.global_position = position
 	press.pressed = true
 	Input.parse_input_event(press)
-	var release := press.duplicate()
+	# Keep the press alive until the next idle frame. Some HTML5 browsers batch
+	# callback work; a synchronous press+release can be collapsed before a
+	# Control observes its pressed state.
+	get_tree().create_timer(0.05).connect("timeout", self, "_release_web_pointer", [position])
+	web_pointer_sequence += 1
+	var window = JavaScript.get_interface("window")
+	window.activePoeInputAck = web_pointer_sequence
+
+func _release_web_pointer(position: Vector2) -> void:
+	var release := InputEventMouseButton.new()
+	release.button_index = BUTTON_LEFT
+	release.position = position
+	release.global_position = position
 	release.pressed = false
 	Input.parse_input_event(release)
 
@@ -67,6 +84,10 @@ func _refresh() -> void:
 	meeting_card.configure(snap, model)
 	agenda.configure(model.free_slots(), model)
 	demo_controls.configure(model.beat_index, model.BEATS.size(), model.offline, model.clock_mode_label())
+	if OS.has_feature("HTML5"):
+		var window = JavaScript.get_interface("window")
+		window.activePoeUxState = str(snap.state)
+		window.activePoeBookingCount = model.bookings.size()
 
 func _on_next() -> void:
 	model.next_beat()
