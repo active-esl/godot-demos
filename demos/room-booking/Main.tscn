@@ -11,13 +11,19 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource( 1 )
 
+[node name="Background" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color( 0.968627, 0.976471, 0.988235, 1 )
+
 [node name="Layout" type="VBoxContainer" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
 custom_constants/separation = 0
 
 [node name="StatusStrip" parent="Layout" instance=ExtResource( 2 )]
-rect_min_size = Vector2( 0, 132 )
+rect_min_size = Vector2( 0, 152 )
 
 [node name="Body" type="MarginContainer" parent="Layout"]
 size_flags_vertical = 3
@@ -39,4 +45,3 @@ size_flags_horizontal = 3
 
 [node name="DemoControls" parent="Layout" instance=ExtResource( 5 )]
 rect_min_size = Vector2( 0, 82 )
-
