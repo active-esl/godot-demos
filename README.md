@@ -1,53 +1,82 @@
-# Elanco manufacturing digital-twin concept
+# Active ESL Godot demos
 
-[![Build and deploy Godot demo](https://github.com/active-esl/godot3-manufacturing-digital-twin-demo/actions/workflows/pages.yml/badge.svg)](https://github.com/active-esl/godot3-manufacturing-digital-twin-demo/actions/workflows/pages.yml)
+[![Build and deploy Godot demos](https://github.com/active-esl/godot-demos/actions/workflows/pages.yml/badge.svg)](https://github.com/active-esl/godot-demos/actions/workflows/pages.yml)
 
-[Run the interactive web demo](https://active-esl.github.io/godot3-manufacturing-digital-twin-demo/)
+Touch-first Godot demonstrations for Active ESL embedded display platforms.
+This repository holds focused demos which can be built, tested and presented
+independently while sharing a consistent engineering baseline.
 
-Touch-first Godot 3.6/GLES2 concept for the Jaguar Screen platform. It uses
-simulated data and public Elanco themes; it is not connected to an Elanco site
-or production system.
+## Demo catalogue
 
-> Unofficial concept demonstrator created by Active Edge Solutions Ltd. Elanco
-> and its marks belong to Elanco or its affiliates. No endorsement or access to
-> Elanco production systems is implied.
+| Demo | Engine | Purpose | Try it |
+|------|--------|---------|--------|
+| [Elanco manufacturing digital twin](demos/elanco-manufacturing-digital-twin/) | Godot 3.6 / GLES2 | Simulated factory process, asset and quality views | [Web demo](https://active-esl.github.io/godot-demos/) |
 
-## Views
+The Elanco-themed demonstrator uses simulated data and public themes. It is an
+unofficial concept: it is not connected to an Elanco site or production system,
+and no endorsement or access to Elanco systems is implied.
 
-1. Process overview: feed vessel, bioreactor, fill-and-finish line, animated
-   flow, gauges and batch KPIs.
-2. Asset detail: reactor animation, live trends, temperature setpoint and an
-   agitator start/pause control.
-3. Quality and resources: right-first-time, yield, energy, water, quality
-   gates and an operational recommendation.
+## Repository layout
 
-Swipe horizontally or touch the bottom navigation. On the overview, touch an
-asset to open its detail. On the asset page, drag the setpoint or touch the
-agitator control.
-
-## Positioning
-
-- All process values are explicitly simulated.
-- The interface is Elanco-inspired rather than a claim to be an official
-  Elanco application.
-- The content reflects Elanco's public emphasis on animal-health manufacturing
-  and quality, plus operational energy and water management.
-- The interface uses Godot `Control` nodes, containers, themes and standard
-  interactive controls. Process machinery is composed from bounded UI nodes;
-  the application does not paint screens through `_draw()` canvas calls.
-- Lightweight UI geometry keeps the workload appropriate for the Vivante
-  GC7000NanoUltra and avoids heavyweight 3D assets in the first prototype.
-
-## Run
-
-```sh
-godot3 --video-driver GLES2 --path .
+```text
+demos/
+  <demo-name>/
+    project.godot
+    Main.tscn
+    ...
+.github/workflows/    build and publication automation
+dist/                 generated Pages output; never source
 ```
 
-The project uses a 1920x1200 design canvas but scales from the actual viewport.
-Physical panel orientation remains the responsibility of the BSP/compositor.
+Each demo owns its Godot project, assets, export preset and local run script.
+New demos use a stable lowercase slug, avoid dependencies on sibling projects,
+and document their engine version, platform assumptions, interaction model and
+licensing in their directory.
+
+Shared code or assets should only be promoted into a top-level `shared/`
+directory after at least two demos genuinely use them. This keeps demos easy to
+copy, deploy and test independently without premature coupling.
+
+## Current demo
+
+The manufacturing digital twin provides:
+
+1. A process overview for raw material, bioreactor and fill-and-finish assets.
+2. Reactor detail with simulated live conditions, setpoint and agitator control.
+3. Quality, yield, energy and water performance views.
+4. Touch buttons and horizontal swipe navigation.
+
+Its UI is built from Godot `Control` nodes, containers and standard interactive
+controls. It targets a 1920×1200 landscape display; physical panel orientation
+remains the responsibility of the BSP and compositor.
+
+Run it locally with:
+
+```sh
+godot3 --video-driver GLES2 --path demos/elanco-manufacturing-digital-twin
+```
+
+## Adding a demo
+
+1. Create `demos/<demo-name>/` as a self-contained Godot project.
+2. Use `Control` nodes and container-based layout for application UI.
+3. Add a headless parse/smoke check and an export preset appropriate to its
+   target.
+4. Add it to the catalogue and extend CI with a separate, clearly named job.
+5. Cache pinned toolchains and templates on self-hosted runners, then measure a
+   warm run to confirm the intended speed-up.
+6. Publish web-capable demos at a stable path under the collection Pages site.
+
+## CI and publication
+
+The current workflow exports the first Godot 3 demo and publishes it to GitHub
+Pages. The pinned exporter and templates are checksum-verified and cached on
+self-hosted runners. As more demos are added, CI should build each affected demo
+independently and assemble their outputs into one Pages artefact rather than
+coupling all projects into a single Godot export.
 
 ## Licensing
 
-The demo code is MIT licensed. Bundled DejaVu fonts retain their own licence;
-see `fonts/LICENSE.txt`.
+Demo code is MIT licensed unless a demo directory states otherwise. Bundled
+third-party assets retain their own licences; see the licence files beside
+those assets.

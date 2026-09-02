@@ -71,7 +71,8 @@ jobs:
           set -euo pipefail
           mkdir -p dist
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
-            --path . --export "Web" dist/index.html
+            --path demos/elanco-manufacturing-digital-twin \
+            --export "Web" "$GITHUB_WORKSPACE/dist/index.html"
           test -s dist/index.html
           test -s dist/index.wasm
           test -s dist/index.pck
