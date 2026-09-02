@@ -45,6 +45,8 @@ to open the source assets directly. Runtime support required by this demo is:
 - HTTP, TLS/CA certificates, JSON and atomic local-file reads;
 - touch input and a 1280×800 fullscreen Weston surface;
 - persistent `/var/lib/active-edge-room-booking` state;
+- an isolated `/var/lib/active-edge-room-booking-display` home/cache writable
+  by the hardened display service;
 - Python, timezone data, CA certificates and the pinned calendar dependencies
   for the separate Google Calendar bridge.
 

@@ -10,16 +10,21 @@ User=weston
 Group=weston
 Environment=XDG_RUNTIME_DIR=/run
 Environment=WAYLAND_DISPLAY=wayland-0
+Environment=HOME=/var/lib/active-edge-room-booking-display
+Environment=XDG_DATA_HOME=/var/lib/active-edge-room-booking-display/data
+Environment=XDG_CACHE_HOME=/var/lib/active-edge-room-booking-display/cache
+Environment=XDG_CONFIG_HOME=/var/lib/active-edge-room-booking-display/config
 Environment=AESL_ROOM_BOOKING_CALENDAR_PATH=/var/lib/active-edge-room-booking/calendar_day.json
 ExecStart=/usr/bin/godot3 --main-pack /opt/active-edge-room-booking/active-edge-room-booking.pck --video-driver GLES2 --fullscreen
 Restart=on-failure
 RestartSec=2s
+StateDirectory=active-edge-room-booking-display
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectHome=true
 ProtectSystem=strict
 ReadOnlyPaths=/opt/active-edge-room-booking
-ReadWritePaths=/var/lib/active-edge-room-booking
+ReadWritePaths=/var/lib/active-edge-room-booking-display
 
 [Install]
 WantedBy=graphical.target
