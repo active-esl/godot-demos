@@ -46,9 +46,8 @@ func _ready():
     print("ELANCO_TWIN_READY screen=%s window=%s" % [OS.get_screen_size(), OS.window_size])
 
 func make_font(size, bold):
-    var data = DynamicFontData.new()
     var filename = "DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf"
-    data.font_path = ProjectSettings.globalize_path("res://fonts/" + filename)
+    var data = load("res://fonts/" + filename)
     var result = DynamicFont.new()
     result.font_data = data
     result.size = size

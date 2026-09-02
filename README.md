@@ -1,5 +1,9 @@
 # Elanco manufacturing digital-twin concept
 
+[![Build and deploy Godot demo](https://github.com/active-esl/godot3-manufacturing-digital-twin-demo/actions/workflows/pages.yml/badge.svg)](https://github.com/active-esl/godot3-manufacturing-digital-twin-demo/actions/workflows/pages.yml)
+
+[Run the interactive web demo](https://active-esl.github.io/godot3-manufacturing-digital-twin-demo/)
+
 Touch-first Godot 3.6/GLES2 concept for the Jaguar Screen platform. It uses
 simulated data and public Elanco themes; it is not connected to an Elanco site
 or production system.

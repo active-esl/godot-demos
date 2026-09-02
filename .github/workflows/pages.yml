@@ -1,0 +1,78 @@
+name: Build and deploy Godot demo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: 3.6.2
+  GODOT_RELEASE: 3.6.2-stable
+  GODOT_HEADLESS_SHA512: 674dd18e89d4eaac62d83346776133abf987b6e85dad9b6842bd5f574d954c6f2774e9f527d4b763ba9f4765ee0c427b58dcadf96cd8da09ac8fae0ec08f3693
+  GODOT_TEMPLATES_SHA512: 11609918871f773b5945285ab24bb516af332afa3d3185bf65e51bab81195d4aec9fd235576771e4f08e5d8e4995ccce7f6f97162c56ad95171b661dd10aa08c
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      XDG_DATA_HOME: ${{ runner.temp }}/xdg-data
+      XDG_CONFIG_HOME: ${{ runner.temp }}/xdg-config
+      XDG_CACHE_HOME: ${{ runner.temp }}/xdg-cache
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+
+      - name: Install pinned Godot 3 exporter
+        shell: bash
+        run: |
+          set -euo pipefail
+          editor="Godot_v${GODOT_RELEASE}_linux_headless.64.zip"
+          templates="Godot_v${GODOT_RELEASE}_export_templates.tpz"
+          base_url="https://github.com/godotengine/godot/releases/download/${GODOT_RELEASE}"
+          curl --fail --location --retry 3 --output "$editor" "$base_url/$editor"
+          curl --fail --location --retry 3 --output "$templates" "$base_url/$templates"
+          echo "$GODOT_HEADLESS_SHA512  $editor" | sha512sum --check --strict
+          echo "$GODOT_TEMPLATES_SHA512  $templates" | sha512sum --check --strict
+          unzip -q "$editor" -d "${RUNNER_TEMP}/godot"
+          mkdir -p "$XDG_DATA_HOME/godot/templates/${GODOT_VERSION}.stable"
+          unzip -q "$templates" -d "${RUNNER_TEMP}/templates"
+          cp -R "${RUNNER_TEMP}/templates/templates/." "$XDG_DATA_HOME/godot/templates/${GODOT_VERSION}.stable/"
+
+      - name: Export HTML5 site
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          "${RUNNER_TEMP}/godot/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path . --export "Web" dist/index.html
+          test -s dist/index.html
+          test -s dist/index.wasm
+          test -s dist/index.pck
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

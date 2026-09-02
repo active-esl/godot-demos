@@ -1,6 +1,6 @@
 .godot/
 .import/
 export/
+dist/
 *.pck
 *.zip
-
