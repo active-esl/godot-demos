@@ -21,16 +21,20 @@ Tap personnel markers or team rows to inspect them. Use **Next event** and
 **FR/EN** to switch the complete interface between British English and French.
 Keyboard equivalents are `N`/right, `P`/left, `R`, and `L`.
 
-The same scene responds live to device rotation. Landscape uses the full
-two-column command view; portrait stacks the map above the operational panel.
-On narrow phones, secondary bearer, clock and team-list detail is collapsed so
-the map, selected-person state, incident alert and touch navigation remain
-usable without horizontal scrolling. Browser touch and native touchscreen input
-are both supported.
+MAX TABLET defaults explicitly to landscape and opens at 1920×1200. That is the
+primary tactical layout and does not depend on an accelerometer: the embedded
+Linux display stack and launcher present a fixed landscape output. Browser
+touch and native touchscreen input are both supported.
+
+The same scene remains responsive when presented with a portrait viewport for
+web previews or a deliberately rotated display configuration. Portrait stacks
+the map above the operational panel. On narrow phones, secondary bearer, clock
+and team-list detail is collapsed so the map, selected-person state, incident
+alert and touch navigation remain usable without horizontal scrolling.
 
 For a mobile demonstration, open the published web build directly in a modern
-phone or tablet browser. Rotation is handled in place; there is no separate
-portrait build or orientation lock.
+phone or tablet browser. The web layout responds in place when the browser
+viewport changes; a packaged handheld build requests landscape by default.
 
 Automated review captures can select a deterministic state with
 `TACTICAL_DEMO_PROFILE=uk|fr` and `TACTICAL_DEMO_BEAT=0..6`.

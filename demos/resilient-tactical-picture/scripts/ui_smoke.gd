@@ -5,6 +5,7 @@ func _init() -> void:
 
 func _run() -> void:
 	var packed: PackedScene = load("res://Main.tscn")
+	assert(ProjectSettings.get_setting("display/window/handheld/orientation") == "landscape")
 	var main = packed.instance()
 	get_root().add_child(main)
 	yield(self, "idle_frame")
