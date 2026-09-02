@@ -119,7 +119,7 @@ jobs:
             --path demos/room-booking \
             --export-pack "Embedded PCK" \
             "$GITHUB_WORKSPACE/dist/embedded/room-booking/active-edge-room-booking.pck"
-          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+          timeout 30s "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --main-pack "$GITHUB_WORKSPACE/dist/embedded/room-booking/active-edge-room-booking.pck" \
             --no-window -s scripts/model_smoke.gd \
             | tee "${RUNNER_TEMP}/room-booking-pack-smoke.log"
