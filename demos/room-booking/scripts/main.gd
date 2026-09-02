@@ -34,6 +34,7 @@ func _ready() -> void:
 	demo_controls.connect("offline_requested", self, "_on_offline")
 	demo_controls.connect("reset_requested", self, "_on_reset")
 	_refresh()
+	_mark_web_pointer_ready()
 	print("ROOM_BOOKING_DEMO_READY")
 
 func _build_web_pointer_bridge() -> void:
@@ -45,7 +46,11 @@ func _build_web_pointer_bridge() -> void:
 	web_pointer_callback = JavaScript.create_callback(self, "_on_web_pointer_tap")
 	var window = JavaScript.get_interface("window")
 	window.activePoeInput = web_pointer_callback
-	window.activePoeInputReady = true
+	window.activePoeInputReady = false
+
+func _mark_web_pointer_ready() -> void:
+	if OS.has_feature("HTML5"):
+		JavaScript.get_interface("window").activePoeInputReady = true
 
 func _on_web_pointer_tap(args: Array) -> void:
 	if args.size() < 2:
