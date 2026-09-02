@@ -1,349 +1,482 @@
-extends Node2D
+extends Control
 
-# Elanco-inspired concept UI using simulated values only.
-# Designed for Godot 3.6 GLES2 and a compositor-provided landscape output.
-
-const DESIGN_SIZE = Vector2(1920, 1200)
-const NAV_HEIGHT = 132.0
-const PAGE_NAMES = ["PROCESS", "ASSET", "QUALITY"]
-
+# Touch-first demonstrator: every UI element is a Control node. Values are simulated.
+const NAMES = ["PROCESS", "ASSET", "QUALITY"]
 const INK = Color("172033")
 const MUTED = Color("657087")
 const PAPER = Color("f4f6f8")
 const WHITE = Color("ffffff")
 const PURPLE = Color("5b2b82")
-const PURPLE_DARK = Color("35164f")
+const DARK = Color("35164f")
 const AQUA = Color("00a6a6")
 const GREEN = Color("57a773")
 const AMBER = Color("f3a712")
-const RED = Color("d94b4b")
 const BLUE = Color("2878b5")
 const LINE = Color("d8dee8")
 
-var fonts_regular = {}
-var fonts_bold = {}
+var regular
+var bold
+var pages = []
+var nav = []
+var live = {}
 var page = 0
 var elapsed = 0.0
-var drag_active = false
+var batch = 64.0
+var mixing = true
 var drag_start = Vector2()
-var drag_last = Vector2()
-var drag_offset = 0.0
-var mouse_drag = false
-var selected_asset = 1
-var temperature_setpoint = 37.0
-var mixing_enabled = true
-var batch_progress = 0.64
-var touch_points = {}
-var last_interaction = 0.0
+var dragging = false
 
 func _ready():
-    var sizes = [16, 17, 18, 20, 21, 22, 23, 24, 25, 30, 32, 36, 38, 42, 52]
-    for size in sizes:
-        fonts_regular[size] = make_font(size, false)
-        fonts_bold[size] = make_font(size, true)
-    set_process(true)
-    set_process_input(true)
-    print("ELANCO_TWIN_READY screen=%s window=%s" % [OS.get_screen_size(), OS.window_size])
+	regular = load("res://fonts/DejaVuSans.ttf")
+	bold = load("res://fonts/DejaVuSans-Bold.ttf")
+	build_ui()
+	show_page(0)
+	print("ELANCO_TWIN_READY screen=%s window=%s controls=true" % [OS.get_screen_size(), OS.window_size])
 
-func make_font(size, bold):
-    var filename = "DejaVuSans-Bold.ttf" if bold else "DejaVuSans.ttf"
-    var data = load("res://fonts/" + filename)
-    var result = DynamicFont.new()
-    result.font_data = data
-    result.size = size
-    result.use_filter = true
-    return result
+func build_ui():
+	add_child(rect(PAPER, true))
+	var shell = VBoxContainer.new()
+	shell.set_anchors_and_margins_preset(PRESET_WIDE)
+	shell.add_constant_override("separation", 0)
+	add_child(shell)
+	shell.add_child(header())
+	var margin = MarginContainer.new()
+	margins(margin, 52, 30, 52, 28)
+	margin.size_flags_vertical = SIZE_EXPAND_FILL
+	shell.add_child(margin)
+	var stack = Control.new()
+	stack.size_flags_horizontal = SIZE_EXPAND_FILL
+	stack.size_flags_vertical = SIZE_EXPAND_FILL
+	margin.add_child(stack)
+	pages = [process_page(), asset_page(), quality_page()]
+	for child in pages:
+		child.set_anchors_and_margins_preset(PRESET_WIDE)
+		stack.add_child(child)
+	shell.add_child(navigation())
+
+func header():
+	var panel = PanelContainer.new()
+	panel.rect_min_size.y = 142
+	panel.add_stylebox_override("panel", style(WHITE, 0, PURPLE, 0, 0, 4))
+	var margin = MarginContainer.new()
+	margins(margin, 52, 24, 52, 20)
+	panel.add_child(margin)
+	var row = HBoxContainer.new()
+	row.add_constant_override("separation", 28)
+	margin.add_child(row)
+	var mark = HBoxContainer.new()
+	mark.add_constant_override("separation", 5)
+	for colour in [AMBER, GREEN, AQUA]:
+		var stripe = rect(colour)
+		stripe.rect_min_size = Vector2(12, 70)
+		mark.add_child(stripe)
+	row.add_child(mark)
+	row.add_child(label("elanco", 46, DARK, true))
+	var titles = VBoxContainer.new()
+	titles.size_flags_horizontal = SIZE_EXPAND_FILL
+	titles.add_child(label("MANUFACTURING DIGITAL TWIN", 29, INK, true))
+	titles.add_child(label("CONCEPT DEMONSTRATION  •  SIMULATED DATA", 17, MUTED))
+	row.add_child(titles)
+	row.add_child(pill("●  LINE HEALTHY", GREEN, 270))
+	return panel
+
+func page_shell(title, subtitle):
+	var view = VBoxContainer.new()
+	view.add_constant_override("separation", 22)
+	view.add_child(label(title, 36, DARK, true))
+	view.add_child(label(subtitle, 19, MUTED))
+	var body = VBoxContainer.new()
+	body.name = "Body"
+	body.size_flags_vertical = SIZE_EXPAND_FILL
+	body.add_constant_override("separation", 22)
+	view.add_child(body)
+	return view
+
+func process_page():
+	var view = page_shell("Speke Site  •  Batch A24-0902", "Live process overview — select an asset for detail")
+	var body = view.get_node("Body")
+	var cards = HBoxContainer.new()
+	cards.size_flags_vertical = SIZE_EXPAND_FILL
+	cards.add_constant_override("separation", 28)
+	body.add_child(cards)
+	cards.add_child(process_card(0, "RAW MATERIAL", "Feed vessel V-101", "LEVEL", "%", AQUA))
+	cards.add_child(process_card(1, "BIOREACTOR", "Reactor R-204", "TEMPERATURE", "°C", PURPLE))
+	cards.add_child(process_card(2, "FILL & FINISH", "Line FL-03", "THROUGHPUT", "VIALS/MIN", BLUE))
+	var strip = HBoxContainer.new()
+	strip.rect_min_size.y = 112
+	strip.add_constant_override("separation", 22)
+	body.add_child(strip)
+	for item in [["BATCH COMPLETE", "64%", "batch"], ["QUALITY SCORE", "98.7%", "quality"], ["OEE", "91.4%", "oee"], ["NEXT SAMPLE", "08:42", "sample"]]:
+		var card = metric(item[0], item[1])
+		strip.add_child(card)
+		live[item[2]] = card.get_node("Margin/Content/Value")
+	return view
+
+func process_card(index, title, subtitle, metric_name, unit, accent):
+	var panel = PanelContainer.new()
+	panel.size_flags_horizontal = SIZE_EXPAND_FILL
+	panel.add_stylebox_override("panel", style(WHITE, 10, accent, 7))
+	var margin = MarginContainer.new()
+	margins(margin, 28, 24, 28, 22)
+	panel.add_child(margin)
+	var box = VBoxContainer.new()
+	box.add_constant_override("separation", 8)
+	margin.add_child(box)
+	box.add_child(label(title, 23, DARK, true))
+	box.add_child(label(subtitle, 18, MUTED))
+	box.add_child(machine(index, accent))
+	box.add_child(label(metric_name, 15, MUTED, true))
+	var value_row = HBoxContainer.new()
+	var value = label("--", 35, DARK, true)
+	value_row.add_child(value)
+	var units = label("  " + unit, 15, MUTED, true)
+	units.size_flags_vertical = SIZE_SHRINK_END
+	value_row.add_child(units)
+	box.add_child(value_row)
+	var bar = progress(accent, 20)
+	box.add_child(bar)
+	var button = button("VIEW ASSET DETAILS  →", false)
+	button.connect("pressed", self, "show_page", [1])
+	box.add_child(button)
+	live["value%d" % index] = value
+	live["gauge%d" % index] = bar
+	return panel
+
+func machine(kind, accent):
+	var frame = CenterContainer.new()
+	frame.rect_min_size.y = 230
+	frame.size_flags_vertical = SIZE_EXPAND_FILL
+	var machine = Control.new()
+	machine.rect_min_size = Vector2(280, 210)
+	frame.add_child(machine)
+	if kind < 2:
+		machine.add_child(at(rect(Color("e4edf1")), 55, 14, 170, 165))
+		machine.add_child(at(rect(Color(accent.r, accent.g, accent.b, 0.42)), 67, 102, 146, 65))
+		machine.add_child(at(rect(PURPLE), 134, 0, 12, 135))
+		machine.add_child(at(rect(INK), 42, 179, 196, 14))
+		machine.add_child(at(rect(INK), 65, 193, 12, 17))
+		machine.add_child(at(rect(INK), 203, 193, 12, 17))
+		if kind == 1:
+			var agitator = at(rect(accent), 90, 129, 100, 12)
+			agitator.rect_pivot_offset = Vector2(50, 6)
+			machine.add_child(agitator)
+			live["agitator"] = agitator
+	else:
+		machine.add_child(at(rect(INK), 20, 164, 240, 16))
+		machine.add_child(at(rect(PURPLE), 75, 20, 130, 72))
+		for x in [48, 103, 158, 213]:
+			machine.add_child(at(rect(Color("c9e7eb")), x, 112, 25, 52))
+			machine.add_child(at(rect(AQUA), x + 4, 103, 17, 9))
+	return frame
+
+func asset_page():
+	var view = page_shell("Reactor R-204", "Live asset detail — adjust the setpoint or agitator")
+	var columns = HBoxContainer.new()
+	columns.size_flags_vertical = SIZE_EXPAND_FILL
+	columns.add_constant_override("separation", 28)
+	view.get_node("Body").add_child(columns)
+	var asset = section(500)
+	var abox = asset.get_node("Margin/Content")
+	abox.add_child(label("LIVE DIGITAL ASSET", 18, MUTED, true))
+	abox.add_child(machine(1, AQUA))
+	var state = pill("AGITATOR  •  RUNNING", GREEN, 350)
+	abox.add_child(state)
+	live["state"] = state.get_node("Text")
+	columns.add_child(asset)
+	var right = VBoxContainer.new()
+	right.size_flags_horizontal = SIZE_EXPAND_FILL
+	right.add_constant_override("separation", 22)
+	columns.add_child(right)
+	var conditions = section(0)
+	conditions.size_flags_vertical = SIZE_EXPAND_FILL
+	var cbox = conditions.get_node("Margin/Content")
+	cbox.add_child(label("PROCESS CONDITIONS  •  LAST 30 MIN", 18, MUTED, true))
+	cbox.add_child(condition("TEMPERATURE", "37.2 °C", PURPLE, "temperature", 82))
+	cbox.add_child(condition("PRESSURE", "1.82 bar", AQUA, "pressure", 61))
+	cbox.add_child(condition("AGITATOR SPEED", "420 rpm", BLUE, "speed", 70))
+	cbox.add_child(condition("DISSOLVED OXYGEN", "46.8%", GREEN, "oxygen", 47))
+	right.add_child(conditions)
+	var controls = section(0)
+	var ctrl = controls.get_node("Margin/Content")
+	var row = HBoxContainer.new()
+	row.add_child(label("TEMPERATURE SETPOINT", 18, MUTED, true))
+	var spacer = Control.new()
+	spacer.size_flags_horizontal = SIZE_EXPAND_FILL
+	row.add_child(spacer)
+	var setpoint = label("37.0 °C", 28, DARK, true)
+	row.add_child(setpoint)
+	ctrl.add_child(row)
+	var slider = HSlider.new()
+	slider.min_value = 32
+	slider.max_value = 42
+	slider.step = 0.1
+	slider.value = 37
+	slider.rect_min_size.y = 52
+	slider.connect("value_changed", self, "setpoint_changed")
+	ctrl.add_child(slider)
+	var toggle = button("PAUSE AGITATOR", true)
+	toggle.connect("pressed", self, "toggle_mixing")
+	ctrl.add_child(toggle)
+	live["setpoint"] = setpoint
+	live["slider"] = slider
+	live["toggle"] = toggle
+	right.add_child(controls)
+	return view
+
+func condition(title, value, accent, key, initial):
+	var box = VBoxContainer.new()
+	var row = HBoxContainer.new()
+	row.add_child(label(title, 16, INK, true))
+	var spacer = Control.new()
+	spacer.size_flags_horizontal = SIZE_EXPAND_FILL
+	row.add_child(spacer)
+	var reading = label(value, 19, accent, true)
+	row.add_child(reading)
+	box.add_child(row)
+	var bar = progress(accent, 17)
+	bar.value = initial
+	box.add_child(bar)
+	live[key] = reading
+	live[key + "_bar"] = bar
+	return box
+
+func quality_page():
+	var view = page_shell("Quality & Resource Performance", "Manufacturing insight — simulated site data")
+	var body = view.get_node("Body")
+	var kpis = HBoxContainer.new()
+	kpis.rect_min_size.y = 180
+	kpis.add_constant_override("separation", 20)
+	body.add_child(kpis)
+	for item in [["RIGHT FIRST TIME", "98.7%", "+0.8%", GREEN], ["ENERGY / BATCH", "1.42 MWh", "−6.2%", AQUA], ["WATER / BATCH", "18.6 m³", "−4.1%", BLUE], ["BATCH YIELD", "96.8%", "+1.3%", PURPLE]]:
+		kpis.add_child(kpi(item[0], item[1], item[2], item[3]))
+	var lower = HBoxContainer.new()
+	lower.size_flags_vertical = SIZE_EXPAND_FILL
+	lower.add_constant_override("separation", 28)
+	body.add_child(lower)
+	var gates = section(0)
+	gates.size_flags_horizontal = SIZE_EXPAND_FILL
+	var gbox = gates.get_node("Margin/Content")
+	gbox.add_child(label("BATCH QUALITY GATE", 21, DARK, true))
+	gbox.add_child(gate("Identity & potency", 99, GREEN))
+	gbox.add_child(gate("Sterility assurance", 97, GREEN))
+	gbox.add_child(gate("Fill-weight conformity", 94, AQUA))
+	lower.add_child(gates)
+	var insights = section(610)
+	var ibox = insights.get_node("Margin/Content")
+	ibox.add_child(label("OPERATIONAL INSIGHT", 21, DARK, true))
+	ibox.add_child(insight("IN CONTROL", "All critical parameters within limits", GREEN))
+	ibox.add_child(insight("WATCH", "CIP water use trending above plan", AMBER))
+	ibox.add_child(insight("OPPORTUNITY", "Optimise rinse stage 3", AQUA))
+	lower.add_child(insights)
+	return view
+
+func navigation():
+	var panel = PanelContainer.new()
+	panel.rect_min_size.y = 112
+	panel.add_stylebox_override("panel", style(WHITE, 0, LINE, 0, 3))
+	var margin = MarginContainer.new()
+	margins(margin, 250, 17, 250, 17)
+	panel.add_child(margin)
+	var row = HBoxContainer.new()
+	row.add_constant_override("separation", 20)
+	margin.add_child(row)
+	for i in range(NAMES.size()):
+		var item = button(NAMES[i], false)
+		item.size_flags_horizontal = SIZE_EXPAND_FILL
+		item.connect("pressed", self, "show_page", [i])
+		row.add_child(item)
+		nav.append(item)
+	return panel
+
+func section(width):
+	var panel = PanelContainer.new()
+	panel.rect_min_size.x = width
+	panel.add_stylebox_override("panel", style(WHITE, 10))
+	var margin = MarginContainer.new()
+	margin.name = "Margin"
+	margins(margin, 27, 24, 27, 24)
+	panel.add_child(margin)
+	var box = VBoxContainer.new()
+	box.name = "Content"
+	box.add_constant_override("separation", 18)
+	margin.add_child(box)
+	return panel
+
+func metric(title, value):
+	var panel = section(0)
+	panel.size_flags_horizontal = SIZE_EXPAND_FILL
+	var box = panel.get_node("Margin/Content")
+	box.add_child(label(title, 15, MUTED, true))
+	var reading = label(value, 29, DARK, true)
+	reading.name = "Value"
+	box.add_child(reading)
+	return panel
+
+func kpi(title, value, change, accent):
+	var panel = PanelContainer.new()
+	panel.size_flags_horizontal = SIZE_EXPAND_FILL
+	panel.add_stylebox_override("panel", style(WHITE, 10, accent, 8))
+	var margin = MarginContainer.new()
+	margins(margin, 24, 20, 24, 18)
+	panel.add_child(margin)
+	var box = VBoxContainer.new()
+	box.add_child(label(title, 15, MUTED, true))
+	box.add_child(label(value, 30, DARK, true))
+	box.add_child(label(change + " VS PLAN", 16, accent, true))
+	margin.add_child(box)
+	return panel
+
+func gate(title, value, accent):
+	var box = VBoxContainer.new()
+	var row = HBoxContainer.new()
+	row.add_child(label(title, 18, INK))
+	var spacer = Control.new()
+	spacer.size_flags_horizontal = SIZE_EXPAND_FILL
+	row.add_child(spacer)
+	row.add_child(label("%d%%" % value, 18, accent, true))
+	box.add_child(row)
+	var bar = progress(accent, 20)
+	bar.value = value
+	box.add_child(bar)
+	return box
+
+func insight(state, detail, accent):
+	var panel = PanelContainer.new()
+	panel.add_stylebox_override("panel", style(Color(accent.r, accent.g, accent.b, 0.10), 8))
+	var margin = MarginContainer.new()
+	margins(margin, 17, 13, 17, 13)
+	panel.add_child(margin)
+	var box = VBoxContainer.new()
+	box.add_child(label("●  " + state, 15, accent, true))
+	box.add_child(label(detail, 17, INK))
+	margin.add_child(box)
+	return panel
+
+func label(text, size, colour, heavy = false):
+	var node = Label.new()
+	node.text = text
+	var font = DynamicFont.new()
+	font.font_data = bold if heavy else regular
+	font.size = size
+	font.use_filter = true
+	node.add_font_override("font", font)
+	node.add_color_override("font_color", colour)
+	node.mouse_filter = MOUSE_FILTER_IGNORE
+	return node
+
+func button(text, primary):
+	var node = Button.new()
+	node.text = text
+	node.rect_min_size.y = 58
+	var font = DynamicFont.new()
+	font.font_data = bold
+	font.size = 17
+	node.add_font_override("font", font)
+	node.add_color_override("font_color", WHITE if primary else PURPLE)
+	node.add_color_override("font_color_hover", WHITE if primary else DARK)
+	node.add_stylebox_override("normal", style(PURPLE if primary else Color("edf0f5"), 8))
+	node.add_stylebox_override("hover", style(DARK if primary else Color("e2e7ee"), 8))
+	node.add_stylebox_override("pressed", style(AQUA, 8))
+	return node
+
+func pill(text, colour, width):
+	var panel = PanelContainer.new()
+	panel.rect_min_size = Vector2(width, 58)
+	panel.add_stylebox_override("panel", style(colour, 29))
+	var caption = label(text, 17, WHITE, true)
+	caption.name = "Text"
+	caption.align = Label.ALIGN_CENTER
+	caption.valign = Label.VALIGN_CENTER
+	panel.add_child(caption)
+	return panel
+
+func progress(colour, height):
+	var bar = ProgressBar.new()
+	bar.rect_min_size.y = height
+	bar.percent_visible = false
+	bar.add_stylebox_override("bg", style(Color("e9edf2"), 7))
+	bar.add_stylebox_override("fg", style(colour, 7))
+	return bar
+
+func rect(colour, full = false):
+	var node = ColorRect.new()
+	node.color = colour
+	node.mouse_filter = MOUSE_FILTER_IGNORE
+	if full:
+		node.set_anchors_and_margins_preset(PRESET_WIDE)
+	return node
+
+func at(node, x, y, width, height):
+	node.rect_position = Vector2(x, y)
+	node.rect_size = Vector2(width, height)
+	return node
+
+func style(colour, radius, border = Color(0, 0, 0, 0), left = 0, top = 0, bottom = 0):
+	var box = StyleBoxFlat.new()
+	box.bg_color = colour
+	box.corner_radius_top_left = radius
+	box.corner_radius_top_right = radius
+	box.corner_radius_bottom_left = radius
+	box.corner_radius_bottom_right = radius
+	box.border_color = border
+	box.border_width_left = left
+	box.border_width_top = top
+	box.border_width_bottom = bottom
+	return box
+
+func margins(node, left, top, right, bottom):
+	node.add_constant_override("margin_left", left)
+	node.add_constant_override("margin_top", top)
+	node.add_constant_override("margin_right", right)
+	node.add_constant_override("margin_bottom", bottom)
+
+func show_page(index):
+	page = int(clamp(index, 0, pages.size() - 1))
+	for i in range(pages.size()):
+		pages[i].visible = i == page
+	for i in range(nav.size()):
+		var active = i == page
+		nav[i].add_color_override("font_color", WHITE if active else MUTED)
+		nav[i].add_stylebox_override("normal", style(PURPLE if active else Color("edf0f5"), 8))
+
+func setpoint_changed(value):
+	live["setpoint"].text = "%.1f °C" % value
+
+func toggle_mixing():
+	mixing = not mixing
+	live["toggle"].text = "PAUSE AGITATOR" if mixing else "START AGITATOR"
+	live["state"].text = "AGITATOR  •  RUNNING" if mixing else "AGITATOR  •  PAUSED"
 
 func _process(delta):
-    elapsed += delta
-    if mixing_enabled:
-        batch_progress = fmod(batch_progress + delta * 0.0016, 1.0)
-    if not drag_active:
-        drag_offset = lerp(drag_offset, 0.0, min(1.0, delta * 12.0))
-    update()
+	elapsed += delta
+	if mixing:
+		batch = fmod(batch + delta * 0.16, 100.0)
+		live["agitator"].rect_rotation = fmod(elapsed * 110.0, 360.0)
+	var level = 72.0 + sin(elapsed * 0.45) * 2.0
+	var temperature = live["slider"].value + sin(elapsed * 0.7) * 0.3
+	var throughput = 118.0 + sin(elapsed * 0.8) * 4.0
+	process_value(0, level, 100.0, "%.1f" % level)
+	process_value(1, temperature, 45.0, "%.1f" % temperature)
+	process_value(2, throughput, 150.0, "%.0f" % throughput)
+	live["batch"].text = "%d%%" % int(batch)
+	live["temperature"].text = "%.1f °C" % temperature
+	live["temperature_bar"].value = temperature / 45.0 * 100.0
+	live["pressure"].text = "%.2f bar" % (1.82 + sin(elapsed * 0.45) * 0.04)
+	live["speed"].text = "%d rpm" % (420 if mixing else 0)
+	live["speed_bar"].value = 70 if mixing else 0
+	live["oxygen"].text = "%.1f%%" % (46.8 + sin(elapsed * 0.31) * 1.2)
 
-func to_design(position):
-    var viewport_size = get_viewport_rect().size
-    return Vector2(position.x * DESIGN_SIZE.x / viewport_size.x,
-                   position.y * DESIGN_SIZE.y / viewport_size.y)
+func process_value(index, value, maximum, text):
+	live["value%d" % index].text = text
+	live["gauge%d" % index].value = value / maximum * 100.0
 
 func _input(event):
-    if event is InputEventScreenTouch:
-        var p = to_design(event.position)
-        if event.pressed:
-            touch_points[event.index] = p
-            print("ELANCO_TOUCH_DOWN index=%d position=%s" % [event.index, p])
-            begin_drag(p)
-        else:
-            touch_points.erase(event.index)
-            end_drag(p)
-            print("ELANCO_TOUCH_UP index=%d page=%d" % [event.index, page])
-        get_tree().set_input_as_handled()
-    elif event is InputEventScreenDrag:
-        var p = to_design(event.position)
-        touch_points[event.index] = p
-        update_drag(p)
-        get_tree().set_input_as_handled()
-    elif event is InputEventMouseButton and event.button_index == BUTTON_LEFT:
-        var p = to_design(event.position)
-        mouse_drag = event.pressed
-        if event.pressed:
-            begin_drag(p)
-        else:
-            end_drag(p)
-    elif event is InputEventMouseMotion and mouse_drag:
-        update_drag(to_design(event.position))
-
-func begin_drag(p):
-    last_interaction = elapsed
-    drag_active = true
-    drag_start = p
-    drag_last = p
-    drag_offset = 0.0
-
-func update_drag(p):
-    drag_last = p
-    var dx = p.x - drag_start.x
-    var dy = p.y - drag_start.y
-    if abs(dx) > abs(dy):
-        drag_offset = dx
-    if page == 1 and abs(dx) < 60.0 and p.y > 880.0 and p.y < 990.0:
-        temperature_setpoint = clamp(32.0 + (p.x - 420.0) / 1020.0 * 10.0, 32.0, 42.0)
-
-func end_drag(p):
-    var delta = p - drag_start
-    drag_active = false
-    if abs(delta.x) > 170.0 and abs(delta.x) > abs(delta.y):
-        if delta.x < 0.0:
-            page = min(page + 1, PAGE_NAMES.size() - 1)
-        else:
-            page = max(page - 1, 0)
-    elif delta.length() < 45.0:
-        handle_tap(p)
-    drag_offset = 0.0
-
-func handle_tap(p):
-    if p.y > DESIGN_SIZE.y - NAV_HEIGHT:
-        page = int(clamp(floor(p.x / (DESIGN_SIZE.x / 3.0)), 0, 2))
-        return
-    if page == 0:
-        if p.x > 120.0 and p.x < 1740.0 and p.y > 390.0 and p.y < 875.0:
-            selected_asset = int(clamp(floor((p.x - 120.0) / 540.0), 0, 2))
-            page = 1
-    elif page == 1:
-        if Rect2(1500, 870, 250, 100).has_point(p):
-            mixing_enabled = not mixing_enabled
-
-func _draw():
-    var viewport_size = get_viewport_rect().size
-    var scale = Vector2(viewport_size.x / DESIGN_SIZE.x, viewport_size.y / DESIGN_SIZE.y)
-    draw_set_transform(Vector2(), 0.0, scale)
-    draw_rect(Rect2(Vector2(), DESIGN_SIZE), PAPER)
-    draw_header()
-    draw_page(page, drag_offset)
-    if drag_offset < 0.0 and page < 2:
-        draw_page(page + 1, DESIGN_SIZE.x + drag_offset)
-    elif drag_offset > 0.0 and page > 0:
-        draw_page(page - 1, -DESIGN_SIZE.x + drag_offset)
-    draw_navigation()
-    draw_touch_feedback()
-
-func draw_header():
-    draw_rect(Rect2(0, 0, 1920, 154), WHITE)
-    draw_rect(Rect2(0, 150, 1920, 4), PURPLE)
-    draw_rect(Rect2(54, 38, 14, 72), AMBER)
-    draw_rect(Rect2(72, 38, 14, 72), GREEN)
-    draw_rect(Rect2(90, 38, 14, 72), AQUA)
-    text("elanco", Vector2(128, 92), 52, PURPLE_DARK, true)
-    text("MANUFACTURING DIGITAL TWIN", Vector2(380, 88), 32, INK, true)
-    text("CONCEPT DEMONSTRATION  •  SIMULATED DATA", Vector2(380, 124), 21, MUTED, false)
-    pill(Rect2(1570, 46, 290, 62), "●  LINE HEALTHY", GREEN, WHITE)
-
-func draw_page(which, offset_x):
-    if which == 0:
-        draw_process_page(offset_x)
-    elif which == 1:
-        draw_asset_page(offset_x)
-    else:
-        draw_quality_page(offset_x)
-
-func draw_process_page(x):
-    section_title(x, "Speke Site  •  Batch A24-0902", "Live process overview")
-    var y = 344.0
-    draw_pipe(Vector2(x + 340, y + 255), Vector2(x + 760, y + 255), AQUA)
-    draw_pipe(Vector2(x + 1125, y + 255), Vector2(x + 1510, y + 255), AQUA)
-    process_card(Rect2(x + 100, y, 430, 510), 0, "RAW MATERIAL", "Feed vessel V-101")
-    process_card(Rect2(x + 745, y, 430, 510), 1, "BIOREACTOR", "Reactor R-204")
-    process_card(Rect2(x + 1390, y, 430, 510), 2, "FILL & FINISH", "Line FL-03")
-    metric_strip(x, 900)
-
-func process_card(rect, index, title, subtitle):
-    card(rect, selected_asset == index)
-    text(title, rect.position + Vector2(30, 54), 25, PURPLE_DARK, true)
-    text(subtitle, rect.position + Vector2(30, 91), 21, MUTED, false)
-    var center = rect.position + Vector2(rect.size.x / 2.0, 245)
-    if index < 2:
-        draw_vessel(center, 115.0, index == 1)
-    else:
-        draw_filling_line(center)
-    var value = 0.0
-    var unit = ""
-    if index == 0:
-        value = 72.0 + sin(elapsed * 0.45) * 2.0
-        unit = "% LEVEL"
-    elif index == 1:
-        value = temperature_setpoint + sin(elapsed * 0.7) * 0.3
-        unit = "°C"
-    else:
-        value = 118.0 + sin(elapsed * 0.8) * 4.0
-        unit = "VIALS/MIN"
-    var maximum = 100.0 if index == 0 else (45.0 if index == 1 else 150.0)
-    gauge(center + Vector2(0, 143), 74, value, maximum, unit)
-    text("TOUCH FOR DETAIL", rect.position + Vector2(30, rect.size.y - 24), 18, AQUA, true)
-
-func draw_vessel(center, radius, agitator):
-    draw_rect(Rect2(center.x - radius, center.y - 115, radius * 2, 220), Color("e4edf1"))
-    draw_circle(Vector2(center.x, center.y - 115), radius, Color("e4edf1"))
-    draw_circle(Vector2(center.x, center.y + 105), radius, Color("c9dde3"))
-    draw_rect(Rect2(center.x - radius + 12, center.y + 25, radius * 2 - 24, 80), Color(0.0, 0.65, 0.65, 0.35))
-    draw_line(Vector2(center.x, center.y - 188), Vector2(center.x, center.y + 58), PURPLE, 10)
-    if agitator:
-        var angle = elapsed * (3.0 if mixing_enabled else 0.0)
-        var arm = Vector2(cos(angle), sin(angle)) * 70.0
-        draw_line(Vector2(center.x, center.y + 40) - arm, Vector2(center.x, center.y + 40) + arm, PURPLE, 12)
-    draw_line(Vector2(center.x - 60, center.y + 190), Vector2(center.x - 40, center.y + 105), INK, 10)
-    draw_line(Vector2(center.x + 60, center.y + 190), Vector2(center.x + 40, center.y + 105), INK, 10)
-
-func draw_filling_line(center):
-    draw_rect(Rect2(center.x - 160, center.y + 80, 320, 22), INK)
-    for i in range(4):
-        var bx = center.x - 135 + i * 90 + fmod(elapsed * 35.0, 80.0)
-        draw_rect(Rect2(bx, center.y + 20, 34, 60), Color("dce9f2"))
-        draw_rect(Rect2(bx + 5, center.y + 8, 24, 14), AQUA)
-    draw_rect(Rect2(center.x - 95, center.y - 118, 190, 90), PURPLE)
-    for i in range(3):
-        draw_line(Vector2(center.x - 65 + i * 65, center.y - 28), Vector2(center.x - 65 + i * 65, center.y + 12), AMBER, 8)
-
-func metric_strip(x, y):
-    var labels = ["BATCH COMPLETE", "QUALITY SCORE", "OEE", "NEXT SAMPLE"]
-    var values = ["%d%%" % int(batch_progress * 100.0), "98.7%", "91.4%", "08:42"]
-    for i in range(4):
-        var r = Rect2(x + 100 + i * 430, y, 390, 104)
-        card(r, false)
-        text(labels[i], r.position + Vector2(22, 35), 18, MUTED, true)
-        text(values[i], r.position + Vector2(22, 82), 36, PURPLE_DARK, true)
-
-func draw_asset_page(x):
-    section_title(x, "Reactor R-204", "Asset detail  •  swipe or drag the setpoint")
-    card(Rect2(x + 90, 320, 570, 670), false)
-    text("LIVE DIGITAL ASSET", Vector2(x + 130, 375), 22, MUTED, true)
-    draw_vessel(Vector2(x + 375, 610), 160, true)
-    pill(Rect2(x + 180, 875, 390, 62), "AGITATOR  •  RUNNING" if mixing_enabled else "AGITATOR  •  PAUSED", GREEN if mixing_enabled else AMBER, WHITE)
-    card(Rect2(x + 700, 320, 1120, 500), false)
-    text("PROCESS TREND  •  LAST 30 MIN", Vector2(x + 750, 375), 22, MUTED, true)
-    draw_trend(Rect2(x + 760, 420, 1000, 320))
-    card(Rect2(x + 700, 850, 1120, 140), false)
-    text("TEMPERATURE SETPOINT", Vector2(x + 750, 902), 21, MUTED, true)
-    draw_line(Vector2(x + 850, 952), Vector2(x + 1440, 952), LINE, 18)
-    var knob_x = x + 850 + (temperature_setpoint - 32.0) / 10.0 * 590.0
-    draw_line(Vector2(x + 850, 952), Vector2(knob_x, 952), AQUA, 18)
-    draw_circle(Vector2(knob_x, 952), 30, WHITE)
-    draw_circle(Vector2(knob_x, 952), 22, PURPLE)
-    text("%.1f °C" % temperature_setpoint, Vector2(x + 1510, 966), 38, PURPLE_DARK, true)
-    pill(Rect2(x + 1500, 870, 250, 100), "PAUSE" if mixing_enabled else "START", PURPLE, WHITE)
-
-func draw_trend(rect):
-    for i in range(5):
-        var gy = rect.position.y + i * rect.size.y / 4.0
-        draw_line(Vector2(rect.position.x, gy), Vector2(rect.end.x, gy), LINE, 2)
-    var temp_points = PoolVector2Array()
-    var pressure_points = PoolVector2Array()
-    for i in range(80):
-        var px = rect.position.x + float(i) / 79.0 * rect.size.x
-        temp_points.append(Vector2(px, rect.position.y + 115 + sin(float(i) * 0.18 + elapsed * 0.7) * 28))
-        pressure_points.append(Vector2(px, rect.position.y + 225 + sin(float(i) * 0.13 + elapsed * 0.45) * 34))
-    draw_polyline(temp_points, PURPLE, 7, true)
-    draw_polyline(pressure_points, AQUA, 7, true)
-    text("Temperature  %.1f °C" % (temperature_setpoint + sin(elapsed * 0.7) * 0.3), rect.position + Vector2(20, 42), 22, PURPLE, true)
-    text("Pressure  %.2f bar" % (1.82 + sin(elapsed * 0.45) * 0.04), rect.position + Vector2(610, 42), 22, AQUA, true)
-
-func draw_quality_page(x):
-    section_title(x, "Quality & Resource Performance", "Manufacturing insight  •  simulated site data")
-    kpi_card(Rect2(x + 90, 320, 400, 240), "RIGHT FIRST TIME", "98.7%", "+0.8%", GREEN)
-    kpi_card(Rect2(x + 530, 320, 400, 240), "ENERGY / BATCH", "1.42 MWh", "−6.2%", AQUA)
-    kpi_card(Rect2(x + 970, 320, 400, 240), "WATER / BATCH", "18.6 m³", "−4.1%", BLUE)
-    kpi_card(Rect2(x + 1410, 320, 400, 240), "BATCH YIELD", "96.8%", "+1.3%", PURPLE)
-    card(Rect2(x + 90, 610, 1060, 370), false)
-    text("BATCH QUALITY GATE", Vector2(x + 140, 675), 25, PURPLE_DARK, true)
-    quality_row(x + 140, 740, "Identity & potency", 0.99)
-    quality_row(x + 140, 815, "Sterility assurance", 0.97)
-    quality_row(x + 140, 890, "Fill-weight conformity", 0.94)
-    card(Rect2(x + 1190, 610, 620, 370), false)
-    text("OPERATIONAL INSIGHT", Vector2(x + 1240, 675), 25, PURPLE_DARK, true)
-    draw_circle(Vector2(x + 1270, 750), 12, GREEN)
-    text("All critical parameters in control", Vector2(x + 1300, 760), 22, INK, false)
-    draw_circle(Vector2(x + 1270, 825), 12, AMBER)
-    text("CIP water use trending above plan", Vector2(x + 1300, 835), 22, INK, false)
-    draw_circle(Vector2(x + 1270, 900), 12, AQUA)
-    text("Suggested: optimise rinse stage 3", Vector2(x + 1300, 910), 22, INK, false)
-
-func kpi_card(rect, label, value, change, accent):
-    card(rect, false)
-    draw_rect(Rect2(rect.position, Vector2(12, rect.size.y)), accent)
-    text(label, rect.position + Vector2(36, 58), 20, MUTED, true)
-    text(value, rect.position + Vector2(36, 132), 42, PURPLE_DARK, true)
-    pill(Rect2(rect.position + Vector2(36, 164), Vector2(145, 52)), change, accent, WHITE)
-
-func quality_row(x, y, label, value):
-    text(label, Vector2(x, y), 22, INK, false)
-    draw_rect(Rect2(x + 390, y - 24, 520, 24), LINE)
-    draw_rect(Rect2(x + 390, y - 24, 520 * value, 24), GREEN if value > 0.96 else AQUA)
-    text("%d%%" % int(value * 100.0), Vector2(x + 930, y), 22, PURPLE_DARK, true)
-
-func draw_navigation():
-    draw_rect(Rect2(0, DESIGN_SIZE.y - NAV_HEIGHT, DESIGN_SIZE.x, NAV_HEIGHT), WHITE)
-    draw_line(Vector2(0, DESIGN_SIZE.y - NAV_HEIGHT), Vector2(DESIGN_SIZE.x, DESIGN_SIZE.y - NAV_HEIGHT), LINE, 3)
-    for i in range(3):
-        var x = i * DESIGN_SIZE.x / 3.0
-        if i == page:
-            draw_rect(Rect2(x + 70, DESIGN_SIZE.y - 12, DESIGN_SIZE.x / 3.0 - 140, 8), PURPLE)
-        text(PAGE_NAMES[i], Vector2(x + 245, DESIGN_SIZE.y - 54), 23, PURPLE if i == page else MUTED, true)
-    text("‹  SWIPE  ›", Vector2(860, DESIGN_SIZE.y - 96), 17, MUTED, true)
-
-func draw_touch_feedback():
-    for key in touch_points:
-        var p = touch_points[key]
-        draw_circle(p, 38, Color(0.0, 0.65, 0.65, 0.18))
-        draw_arc(p, 38, 0, PI * 2, 40, AQUA, 4)
-
-func section_title(x, title, subtitle):
-    text(title, Vector2(x + 90, 230), 42, PURPLE_DARK, true)
-    text(subtitle, Vector2(x + 90, 278), 24, MUTED, false)
-
-func card(rect, selected):
-    draw_rect(Rect2(rect.position + Vector2(0, 8), rect.size), Color(0.1, 0.12, 0.18, 0.08))
-    draw_rect(rect, WHITE)
-    if selected:
-        draw_rect(Rect2(rect.position, Vector2(rect.size.x, 7)), AQUA)
-
-func draw_pipe(a, b, color):
-    draw_line(a, b, Color("b9c5d1"), 30)
-    draw_line(a, b, color, 12)
-    var t = fmod(elapsed * 0.22, 1.0)
-    draw_circle(a.linear_interpolate(b, t), 15, WHITE)
-
-func gauge(center, radius, value, maximum, unit):
-    draw_arc(center, radius, PI * 0.75, PI * 2.25, 54, LINE, 16)
-    var fraction = clamp(value / maximum, 0.0, 1.0)
-    draw_arc(center, radius, PI * 0.75, PI * (0.75 + 1.5 * fraction), 54, AQUA, 16)
-    text("%.1f" % value, center + Vector2(-62, 10), 30, PURPLE_DARK, true)
-    text(unit, center + Vector2(-58, 40), 16, MUTED, true)
-
-func pill(rect, label, color, foreground):
-    draw_rect(rect, color)
-    var size = fonts_bold[22].get_string_size(label)
-    text(label, Vector2(rect.position.x + (rect.size.x - size.x) / 2.0, rect.position.y + rect.size.y / 2.0 + 11), 22, foreground, true)
-
-func text(value, position, size, color, bold):
-    var font = fonts_bold[size] if bold else fonts_regular[size]
-    draw_string(font, position, value, color)
+	if event is InputEventScreenTouch or (event is InputEventMouseButton and event.button_index == BUTTON_LEFT):
+		if event.pressed:
+			dragging = true
+			drag_start = event.position
+		elif dragging:
+			var movement = event.position - drag_start
+			dragging = false
+			if abs(movement.x) > 140 and abs(movement.x) > abs(movement.y) * 1.4:
+				show_page(page + 1 if movement.x < 0 else page - 1)

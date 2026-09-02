@@ -32,8 +32,11 @@ agitator control.
   Elanco application.
 - The content reflects Elanco's public emphasis on animal-health manufacturing
   and quality, plus operational energy and water management.
-- Native vector graphics keep the workload appropriate for the Vivante
-  GC7000NanoUltra and avoid heavyweight 3D assets in the first prototype.
+- The interface uses Godot `Control` nodes, containers, themes and standard
+  interactive controls. Process machinery is composed from bounded UI nodes;
+  the application does not paint screens through `_draw()` canvas calls.
+- Lightweight UI geometry keeps the workload appropriate for the Vivante
+  GC7000NanoUltra and avoids heavyweight 3D assets in the first prototype.
 
 ## Run
 

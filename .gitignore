@@ -1,6 +1,7 @@
 .godot/
 .import/
 export/
-dist/
+dist/*
+!dist/.gdignore
 *.pck
 *.zip
