@@ -1,0 +1,53 @@
+name: Room booking export
+
+on:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: 3.6.2
+  GODOT_RELEASE: 3.6.2-stable
+  GODOT_HEADLESS_SHA512: 674dd18e89d4eaac62d83346776133abf987b6e85dad9b6842bd5f574d954c6f2774e9f527d4b763ba9f4765ee0c427b58dcadf96cd8da09ac8fae0ec08f3693
+  GODOT_TEMPLATES_SHA512: 11609918871f773b5945285ab24bb516af332afa3d3185bf65e51bab81195d4aec9fd235576771e4f08e5d8e4995ccce7f6f97162c56ad95171b661dd10aa08c
+
+jobs:
+  export:
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v6
+      - name: Configure Godot paths
+        shell: bash
+        run: |
+          echo "GODOT_CACHE_ROOT=${RUNNER_TOOL_CACHE}/godot-ci/${GODOT_RELEASE}" >> "$GITHUB_ENV"
+          echo "XDG_DATA_HOME=${RUNNER_TOOL_CACHE}/godot-ci/${GODOT_RELEASE}/xdg-data" >> "$GITHUB_ENV"
+          echo "XDG_CONFIG_HOME=${RUNNER_TEMP}/xdg-config" >> "$GITHUB_ENV"
+          echo "XDG_CACHE_HOME=${RUNNER_TEMP}/xdg-cache" >> "$GITHUB_ENV"
+      - name: Verify cached pinned exporter
+        shell: bash
+        run: |
+          set -euo pipefail
+          godot="$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64"
+          expected="${GODOT_HEADLESS_SHA512} ${GODOT_TEMPLATES_SHA512}"
+          test -x "$godot"
+          test -f "$GODOT_CACHE_ROOT/checksums"
+          test "$(cat "$GODOT_CACHE_ROOT/checksums")" = "$expected"
+      - name: Smoke and export room booking
+        shell: bash
+        run: |
+          set -euo pipefail
+          godot="$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64"
+          timeout 45s "$godot" --path demos/room-booking --no-window -s scripts/model_smoke.gd | tee "$RUNNER_TEMP/model-smoke.log"
+          grep -q ROOM_BOOKING_MODEL_SMOKE_OK "$RUNNER_TEMP/model-smoke.log"
+          mkdir -p dist/room-booking
+          base="booking-${GITHUB_SHA::12}"
+          timeout 120s "$godot" --path demos/room-booking --export Web "$GITHUB_WORKSPACE/dist/room-booking/${base}.html"
+          mv "dist/room-booking/${base}.html" dist/room-booking/index.html
+          cp demos/room-booking/data/calendar_day.json dist/room-booking/calendar_day.json
+          test -s dist/room-booking/index.html
+          test -s "dist/room-booking/${base}.pck"
+          test -s "dist/room-booking/${base}.wasm"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: room-booking-web-${{ github.sha }}
+          path: dist/room-booking
+          retention-days: 1
