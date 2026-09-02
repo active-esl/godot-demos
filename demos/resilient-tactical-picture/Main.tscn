@@ -29,7 +29,7 @@ size_flags_horizontal = 3
 custom_constants/separation = 3
 
 [node name="Title" type="Label" parent="Layout/TopBar/Brand"]
-text = "MAX TABLET"
+text = "MAX Tablet"
 
 [node name="Subtitle" type="Label" parent="Layout/TopBar/Brand"]
 text = "RESILIENT TACTICAL PICTURE // EXERCISE ORION"

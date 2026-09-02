@@ -1,6 +1,6 @@
-# MAX TABLET
+# MAX Tablet
 
-**MAX TABLET** is a touch-first resilient network-routing demonstration for the
+**MAX Tablet** is a touch-first resilient network-routing demonstration for the
 Active-Edge Jaguar embedded display platform. It maps fictional heterogeneous
 network nodes, calculates a path between two selected endpoints and visibly
 reroutes traffic as links degrade or a relay disappears.
@@ -48,7 +48,7 @@ the first conversation can be grounded in something concrete.
 
 ## Display and mobile behaviour
 
-MAX TABLET defaults explicitly to landscape and opens at 1920×1200. This does
+MAX Tablet defaults explicitly to landscape and opens at 1920×1200. This does
 not depend on an accelerometer: the embedded Linux display stack and launcher
 present a fixed landscape output. Browser touch and native touchscreen input
 are both supported.
