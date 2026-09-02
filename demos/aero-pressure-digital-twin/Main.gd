@@ -23,6 +23,8 @@ var elapsed = 0.0
 var flow_lines = []
 var sensor_markers = []
 var sensor_values = []
+var sensor_value_panels = []
+var sensor_value_labels = []
 var selected_sensor = 0
 var dragging = false
 var orbit_input_reported = false
@@ -205,6 +207,7 @@ func build_ui():
 		b.connect("pressed", self, "select_sensor", [i])
 		grid.add_child(b)
 		sensor_buttons.append(b)
+	build_sensor_readouts(root)
 	column.add_child(separator())
 	var views = HBoxContainer.new()
 	views.add_constant_override("separation", 8)
@@ -214,6 +217,21 @@ func build_ui():
 		b.connect("pressed", self, "set_view", [item[1], item[2]])
 		views.add_child(b)
 	select_sensor(0)
+
+func build_sensor_readouts(root):
+	for i in range(sensor_names.size()):
+		var panel = PanelContainer.new()
+		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.rect_min_size = Vector2(126, 42)
+		panel.add_stylebox_override("panel", panel_style(Color(0.025, 0.07, 0.12, 0.88), CYAN, 7, 1))
+		var value = text("Z%02d  %+d Pa" % [i + 1, 0], 13, WHITE, true)
+		value.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		value.align = Label.ALIGN_CENTER
+		value.valign = Label.VALIGN_CENTER
+		panel.add_child(value)
+		root.add_child(panel)
+		sensor_value_panels.append(panel)
+		sensor_value_labels.append(value)
 
 func _process(delta):
 	elapsed += delta
@@ -239,7 +257,19 @@ func _process(delta):
 		sensor_values[i] = 101325.0 + pressure_bias[i] * q + pulse
 		var intensity = min(1.0, abs(sensor_values[i] - 101325.0) / 900.0)
 		sensor_markers[i].scale = Vector3.ONE * (1.0 + intensity * 0.42 + sin(elapsed * 3.0 + i) * 0.06)
+	update_sensor_readouts()
 	update_readings(q)
+
+func update_sensor_readouts():
+	for i in range(sensor_value_panels.size()):
+		var marker_position = sensor_markers[i].global_transform.origin
+		var panel = sensor_value_panels[i]
+		panel.visible = not camera.is_position_behind(marker_position)
+		if panel.visible:
+			var screen_position = camera.unproject_position(marker_position)
+			panel.rect_position = screen_position + Vector2(-63, -58)
+			var delta_pa = int(round(sensor_values[i] - 101325.0))
+			sensor_value_labels[i].text = "Z%02d  %+.0f Pa" % [i + 1, delta_pa]
 
 func _input(event):
 	# The FRT/Wayland touchscreen also generates pointer events for Control
