@@ -1,0 +1,187 @@
+extends Reference
+class_name BookingModel
+
+const BEATS := [535, 540, 580, 605, 610]
+const CHECKIN_GRACE := 8
+const RESERVED_LEAD := 15
+
+var room_name := "Atlas · 2.14"
+var floor_name := "Second floor · East wing"
+var now_min := 535
+var offline := false
+var beat_index := 0
+var bookings := []
+var source := "fixture"
+var timezone_name := "Europe/London"
+var utc_offset_minutes := 0
+var schedule_day := ""
+var synced_at := ""
+var simulated_clock := false
+var runtime_calendar_path := "/var/lib/active-edge-room-booking/calendar_day.json"
+
+func load_day(path: String) -> bool:
+	var file := File.new()
+	if file.open(path, File.READ) != OK:
+		return false
+	var parsed = JSON.parse(file.get_as_text())
+	file.close()
+	if parsed.error != OK or typeof(parsed.result) != TYPE_DICTIONARY:
+		return false
+	return apply_day(parsed.result)
+
+func apply_day(day: Dictionary) -> bool:
+	if typeof(day.get("bookings", [])) != TYPE_ARRAY:
+		return false
+	room_name = str(day.get("room", room_name))
+	floor_name = str(day.get("floor", floor_name))
+	bookings = day.get("bookings", []).duplicate(true)
+	bookings.sort_custom(self, "_sort_booking")
+	source = str(day.get("source", "fixture"))
+	timezone_name = str(day.get("timezone", "Europe/London"))
+	utc_offset_minutes = int(day.get("utc_offset_minutes", 0))
+	schedule_day = str(day.get("day", ""))
+	synced_at = str(day.get("synced_at", ""))
+	return true
+
+func reset(use_live_clock: bool = true) -> void:
+	beat_index = 0
+	offline = false
+	simulated_clock = not use_live_clock
+	if not load_day("res://data/calendar_day.json"):
+		load_day("res://data/mock_day.json")
+	if use_live_clock:
+		reload_runtime_day()
+		sync_clock()
+	else:
+		now_min = BEATS[0]
+
+func reload_runtime_day() -> bool:
+	if offline or OS.has_feature("HTML5"):
+		return false
+	var configured := OS.get_environment("AESL_ROOM_BOOKING_CALENDAR_PATH")
+	var path := configured if configured != "" else runtime_calendar_path
+	var before := to_json(bookings) + schedule_day
+	if not load_day(path):
+		return false
+	return to_json(bookings) + schedule_day != before
+
+func sync_clock() -> bool:
+	if simulated_clock:
+		return false
+	var utc := OS.get_datetime(true)
+	var updated := (int(utc.hour) * 60 + int(utc.minute) + utc_offset_minutes) % (24 * 60)
+	if updated < 0:
+		updated += 24 * 60
+	if updated == now_min:
+		return false
+	now_min = updated
+	return true
+
+func use_live_clock() -> void:
+	simulated_clock = false
+	sync_clock()
+
+func next_beat() -> void:
+	simulated_clock = true
+	beat_index = (beat_index + 1) % BEATS.size()
+	now_min = BEATS[beat_index]
+	apply_noshow(false)
+
+func snapshot() -> Dictionary:
+	var current = null
+	var upcoming = null
+	for booking in bookings:
+		if now_min >= int(booking.start) and now_min < int(booking.end):
+			current = booking
+		elif int(booking.start) > now_min and (upcoming == null or int(booking.start) < int(upcoming.start)):
+			upcoming = booking
+	var state := "free"
+	if current != null:
+		state = "busy"
+	elif upcoming != null and int(upcoming.start) - now_min <= RESERVED_LEAD:
+		state = "reserved"
+	return {"current": current, "upcoming": upcoming, "state": state}
+
+func check_in() -> bool:
+	var current = snapshot().current
+	if current == null or bool(current.checked_in):
+		return false
+	current.checked_in = true
+	return true
+
+func extend_current(extra: int = 15) -> bool:
+	var current = snapshot().current
+	if current == null:
+		return false
+	var proposed := int(current.end) + extra
+	for booking in bookings:
+		if booking != current and int(booking.start) < proposed and int(booking.end) > int(current.end):
+			return false
+	current.end = proposed
+	return true
+
+func end_current() -> bool:
+	var current = snapshot().current
+	if current == null:
+		return false
+	bookings.erase(current)
+	return true
+
+func book_at(start_min: int, duration: int = 30) -> bool:
+	var finish := start_min + duration
+	for booking in bookings:
+		if start_min < int(booking.end) and finish > int(booking.start):
+			return false
+	bookings.append({"id":"walkup", "start":start_min, "end":finish, "title":"Walk-up booking", "host":"Booked at the room", "checked_in":true})
+	bookings.sort_custom(self, "_sort_booking")
+	return true
+
+func book_now() -> bool:
+	var start_min := int(ceil(float(now_min) / 5.0) * 5.0)
+	return book_at(start_min, 30)
+
+func apply_noshow(force: bool) -> bool:
+	var current = snapshot().current
+	if current == null or bool(current.checked_in):
+		return false
+	if force or now_min >= int(current.start) + CHECKIN_GRACE:
+		bookings.erase(current)
+		return true
+	return false
+
+func demo_noshow() -> bool:
+	var snap := snapshot()
+	if snap.current == null and snap.upcoming != null:
+		now_min = int(snap.upcoming.start) + CHECKIN_GRACE
+	return apply_noshow(true)
+
+func free_slots() -> Array:
+	var rows := []
+	var cursor := 8 * 60
+	for booking in bookings:
+		if int(booking.start) > cursor:
+			rows.append({"free":true, "start":cursor, "end":int(booking.start)})
+		rows.append({"free":false, "booking":booking})
+		cursor = max(cursor, int(booking.end))
+	if cursor < 17 * 60:
+		rows.append({"free":true, "start":cursor, "end":17 * 60})
+	return rows
+
+func format_time(value: int) -> String:
+	return "%02d:%02d" % [int(value / 60), value % 60]
+
+func sync_label() -> String:
+	if offline:
+		return "Offline · cached agenda"
+	if source == "google":
+		return "Google Calendar live · %s" % timezone_name
+	return "Demo calendar · %s" % timezone_name
+
+func is_live_calendar() -> bool:
+	return source == "google"
+
+func clock_mode_label() -> String:
+	return "Demo time" if simulated_clock else "Live time"
+
+func _sort_booking(a: Dictionary, b: Dictionary) -> bool:
+	return int(a.start) < int(b.start)

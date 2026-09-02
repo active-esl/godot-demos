@@ -1,0 +1,46 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+_global_script_classes=[ {
+"base": "Reference",
+"class": "BookingModel",
+"language": "GDScript",
+"path": "res://scripts/booking_model.gd"
+} ]
+_global_script_class_icons={
+"BookingModel": ""
+}
+
+[application]
+
+config/name="Active POE Product Twin"
+run/main_scene="res://Main.tscn"
+
+[display]
+
+window/size/width=1280
+window/size/height=800
+window/size/borderless=true
+window/size/fullscreen=true
+window/stretch/mode="2d"
+window/stretch/aspect="expand"
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[rendering]
+
+quality/driver/driver_name="GLES2"
+2d/snapping/use_gpu_pixel_snap=true
+quality/shadows/filter_mode=0
+quality/reflections/texture_array_reflections=false
+quality/depth/hdr=false
+quality/2d/use_pixel_snap=true

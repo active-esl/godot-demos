@@ -108,12 +108,17 @@ jobs:
             --path demos/resilient-tactical-picture --no-window -s scripts/ui_smoke.gd \
             | tee "${RUNNER_TEMP}/resilient-tactical-ui-smoke.log"
           grep -q "RESILIENT_TACTICAL_UI_SMOKE_OK" "${RUNNER_TEMP}/resilient-tactical-ui-smoke.log"
-          mkdir -p dist/elanco-manufacturing-digital-twin dist/aero-pressure-digital-twin dist/room-booking dist/resilient-tactical-picture
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/active-poe-product-twin --no-window -s scripts/product_twin_smoke.gd \
+            | tee "${RUNNER_TEMP}/active-poe-product-twin-smoke.log"
+          grep -q "ACTIVE_POE_PRODUCT_TWIN_SMOKE_OK" "${RUNNER_TEMP}/active-poe-product-twin-smoke.log"
+          mkdir -p dist/elanco-manufacturing-digital-twin dist/aero-pressure-digital-twin dist/room-booking dist/resilient-tactical-picture dist/active-poe-product-twin
           cp -R site/. dist/
           manufacturing_base="manufacturing-${GITHUB_SHA::12}"
           aero_base="aero-${GITHUB_SHA::12}"
           booking_base="booking-${GITHUB_SHA::12}"
           tactical_base="tactical-${GITHUB_SHA::12}"
+          product_twin_base="active-poe-${GITHUB_SHA::12}"
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/elanco-manufacturing-digital-twin \
             --export "Web" "$GITHUB_WORKSPACE/dist/elanco-manufacturing-digital-twin/${manufacturing_base}.html"
@@ -126,6 +131,9 @@ jobs:
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/resilient-tactical-picture \
             --export "Web" "$GITHUB_WORKSPACE/dist/resilient-tactical-picture/${tactical_base}.html"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/active-poe-product-twin \
+            --export "Web" "$GITHUB_WORKSPACE/dist/active-poe-product-twin/${product_twin_base}.html"
           mkdir -p dist/embedded/room-booking
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/room-booking \
@@ -146,6 +154,16 @@ jobs:
             --no-window -s scripts/model_smoke.gd \
             | tee "${RUNNER_TEMP}/resilient-tactical-pack-smoke.log"
           grep -q "RESILIENT_TACTICAL_MODEL_SMOKE_OK" "${RUNNER_TEMP}/resilient-tactical-pack-smoke.log"
+          mkdir -p dist/embedded/active-poe-product-twin
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/active-poe-product-twin \
+            --export-pack "Embedded PCK" \
+            "$GITHUB_WORKSPACE/dist/embedded/active-poe-product-twin/active-poe-product-twin.pck"
+          timeout 30s "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --main-pack "$GITHUB_WORKSPACE/dist/embedded/active-poe-product-twin/active-poe-product-twin.pck" \
+            --no-window -s scripts/product_twin_smoke.gd \
+            | tee "${RUNNER_TEMP}/active-poe-product-twin-pack-smoke.log"
+          grep -q "ACTIVE_POE_PRODUCT_TWIN_SMOKE_OK" "${RUNNER_TEMP}/active-poe-product-twin-pack-smoke.log"
           mv "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.html" \
             dist/elanco-manufacturing-digital-twin/index.html
           mv "dist/aero-pressure-digital-twin/${aero_base}.html" \
@@ -154,6 +172,8 @@ jobs:
             dist/room-booking/index.html
           mv "dist/resilient-tactical-picture/${tactical_base}.html" \
             dist/resilient-tactical-picture/index.html
+          mv "dist/active-poe-product-twin/${product_twin_base}.html" \
+            dist/active-poe-product-twin/index.html
           cp demos/room-booking/data/calendar_day.json dist/room-booking/calendar_day.json
           test -s dist/index.html
           test -s dist/elanco-manufacturing-digital-twin/index.html
@@ -171,6 +191,10 @@ jobs:
           test -s "dist/resilient-tactical-picture/${tactical_base}.wasm"
           test -s "dist/resilient-tactical-picture/${tactical_base}.pck"
           test -s dist/embedded/resilient-tactical-picture/active-edge-max-tablet.pck
+          test -s dist/active-poe-product-twin/index.html
+          test -s "dist/active-poe-product-twin/${product_twin_base}.wasm"
+          test -s "dist/active-poe-product-twin/${product_twin_base}.pck"
+          test -s dist/embedded/active-poe-product-twin/active-poe-product-twin.pck
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

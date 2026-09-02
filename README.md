@@ -10,6 +10,7 @@ independently while sharing a consistent engineering baseline.
 
 | Demo | Engine | Purpose | Try it |
 |------|--------|---------|--------|
+| [Active POE product twin](demos/active-poe-product-twin/) | Godot 3.6 / GLES2 | Interactive mechanical product with the real room-booking UX rendered on its display | Web demo after merge |
 | [Elanco manufacturing digital twin](demos/elanco-manufacturing-digital-twin/) | Godot 3.6 / GLES2 | Simulated factory process, asset and quality views | [Web demo](https://active-esl.github.io/godot-demos/elanco-manufacturing-digital-twin/) |
 | [Aero pressure digital twin](demos/aero-pressure-digital-twin/) | Godot 3.6 / GLES2 | Touch-orbitable single-seater, virtual airflow and simulated pressure telemetry | [Web demo](https://active-esl.github.io/godot-demos/aero-pressure-digital-twin/) |
 | [Active-Edge room booking](demos/room-booking/) | Godot 3.6 / GLES2 | Meeting-room availability, agenda, check-in, extend and walk-up booking journey | [Web demo](https://active-esl.github.io/godot-demos/room-booking/) |
@@ -102,6 +103,10 @@ Actions and are never included in the downloadable web application.
 The native screen build instead reads an eight-second local snapshot generated
 by a restricted systemd service. Its Google credential is provisioned onto the
 device separately from the Godot application and is never committed or packed.
+
+The Active POE product twin deliberately uses the lightweight look mesh and
+GLES2 feature set. CI emits the same project as a browser experience and as an
+embedded PCK for the i.MX8M Mini `godot3-frt` runtime.
 
 ## Licensing
 
