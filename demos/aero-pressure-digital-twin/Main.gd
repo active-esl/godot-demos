@@ -311,8 +311,16 @@ func _input(event):
 		elif dragging:
 			orbit_from_delta(event.position - drag_origin)
 		get_tree().set_input_as_handled()
-	elif event is InputEventMouseButton and event.button_index == BUTTON_LEFT:
-		if touch_points.empty():
+	elif event is InputEventMouseButton:
+		if event.pressed and orbit_region_has_point(event.position) and event.button_index in [BUTTON_WHEEL_UP, BUTTON_WHEEL_DOWN]:
+			var zoom_step = 0.88 if event.button_index == BUTTON_WHEEL_UP else 1.12
+			distance = clamp(distance * zoom_step, 6.0, 16.0)
+			update_camera()
+			if not zoom_input_reported:
+				zoom_input_reported = true
+				print("AERO_POINTER_ZOOM_ACTIVE")
+			get_tree().set_input_as_handled()
+		elif event.button_index == BUTTON_LEFT and touch_points.empty():
 			var zone = sensor_zone_at(event.position)
 			if event.pressed and zone >= 0:
 				select_sensor(zone)
@@ -385,6 +393,9 @@ func select_sensor(index):
 	for i in range(sensor_buttons.size()):
 		sensor_buttons[i].modulate = WHITE if i == index else Color(0.72, 0.80, 0.88, 1)
 		sensor_buttons[i].text = ("● " if i == index else "  ") + "%02d %s" % [i + 1, sensor_names[i]]
+		sensor_buttons[i].add_stylebox_override("normal", panel_style(BLUE if i == index else PANEL_LIGHT, CYAN if i == index else Color(0.16, 0.35, 0.50, 1), 7, 2 if i == index else 1))
+		var marker_material = sensor_markers[i].material_override
+		marker_material.albedo_color = LIME if i == index else CYAN
 	print("AERO_SENSOR_SELECTED zone=%02d name=%s" % [index + 1, sensor_names[index]])
 
 func set_view(new_yaw, new_pitch):
@@ -399,7 +410,7 @@ func update_readings(q):
 	var dp = selected - 101325.0
 	speed_value.text = "%d km/h" % int(tunnel_speed)
 	pressure_value.text = "%.3f kPa" % (selected / 1000.0)
-	delta_value.text = "%+.2f kPa" % (dp / 1000.0)
+	delta_value.text = "Z%02d  %+.2f kPa" % [selected_sensor + 1, dp / 1000.0]
 	load_value.text = "%.2f ×" % q
 	status_value.text = "480 Hz  •  Z%02d" % (selected_sensor + 1)
 
