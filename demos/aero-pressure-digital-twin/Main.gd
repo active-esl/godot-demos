@@ -208,8 +208,10 @@ func build_ui():
 	column.add_child(grid)
 	for i in range(sensor_names.size()):
 		var b = action_button("%02d  %s" % [i + 1, sensor_names[i]])
-		b.rect_min_size.y = 42
-		b.connect("pressed", self, "select_sensor", [i])
+		# Select immediately on touch-down. Requiring a release inside these
+		# compact grid cells makes browser touches easy to cancel with finger drift.
+		b.rect_min_size.y = 52
+		b.connect("button_down", self, "select_sensor", [i])
 		grid.add_child(b)
 		sensor_buttons.append(b)
 	build_sensor_readouts(root)
@@ -365,6 +367,7 @@ func select_sensor(index):
 	selected_sensor = index
 	for i in range(sensor_buttons.size()):
 		sensor_buttons[i].modulate = WHITE if i == index else Color(0.72, 0.80, 0.88, 1)
+	print("AERO_SENSOR_SELECTED zone=%02d name=%s" % [index + 1, sensor_names[index]])
 
 func set_view(new_yaw, new_pitch):
 	yaw = new_yaw
