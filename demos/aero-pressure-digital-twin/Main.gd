@@ -17,6 +17,12 @@ var camera
 var yaw = -0.62
 var pitch = -0.30
 var distance = 10.5
+var camera_target = Vector3(0, 0.55, 0)
+var camera_tween
+var focus_from_target = Vector3()
+var focus_to_target = Vector3()
+var focus_from_distance = 10.5
+var focus_to_distance = 5.2
 var tunnel_speed = 220.0
 var flow_enabled = true
 var elapsed = 0.0
@@ -25,7 +31,7 @@ var sensor_markers = []
 var sensor_values = []
 var sensor_value_panels = []
 var sensor_value_labels = []
-var selected_sensor = 0
+var selected_sensor = -1
 var dragging = false
 var orbit_input_reported = false
 var zoom_input_reported = false
@@ -223,7 +229,6 @@ func build_ui():
 		var b = action_button(item[0])
 		b.connect("pressed", self, "set_view", [item[1], item[2]])
 		views.add_child(b)
-	select_sensor(0)
 
 func build_sensor_readouts(root):
 	for i in range(sensor_names.size()):
@@ -381,10 +386,9 @@ func orbit_from_delta(delta):
 	update_camera()
 
 func update_camera():
-	var target = Vector3(0, 0.55, 0)
 	var offset = Vector3(cos(pitch) * cos(yaw), sin(-pitch), cos(pitch) * sin(yaw)) * distance
-	camera.translation = target + offset
-	camera.look_at(target, Vector3.UP)
+	camera.translation = camera_target + offset
+	camera.look_at(camera_target, Vector3.UP)
 
 func speed_changed(value):
 	tunnel_speed = value
@@ -394,6 +398,8 @@ func toggle_flow(button):
 	button.text = "PAUSE AIRFLOW" if flow_enabled else "RESUME AIRFLOW"
 
 func select_sensor(index):
+	if selected_sensor == index:
+		return
 	selected_sensor = index
 	for i in range(sensor_buttons.size()):
 		sensor_buttons[i].modulate = WHITE if i == index else Color(0.72, 0.80, 0.88, 1)
@@ -401,11 +407,34 @@ func select_sensor(index):
 		sensor_buttons[i].add_stylebox_override("normal", panel_style(BLUE if i == index else PANEL_LIGHT, CYAN if i == index else Color(0.16, 0.35, 0.50, 1), 7, 2 if i == index else 1))
 		var marker_material = sensor_markers[i].material_override
 		marker_material.albedo_color = LIME if i == index else CYAN
+	focus_sensor(index)
 	print("AERO_SENSOR_SELECTED zone=%02d name=%s" % [index + 1, sensor_names[index]])
+
+func focus_sensor(index):
+	if camera_tween != null and is_instance_valid(camera_tween):
+		camera_tween.stop_all()
+		camera_tween.queue_free()
+	focus_from_target = camera_target
+	focus_to_target = sensor_markers[index].global_transform.origin + Vector3(0, 0.16, 0)
+	focus_from_distance = distance
+	focus_to_distance = 5.2
+	camera_tween = Tween.new()
+	add_child(camera_tween)
+	camera_tween.interpolate_method(self, "camera_focus_step", 0.0, 1.0, 0.65, Tween.TRANS_CUBIC, Tween.EASE_IN_OUT)
+	camera_tween.start()
+
+func camera_focus_step(weight):
+	camera_target = focus_from_target.linear_interpolate(focus_to_target, weight)
+	distance = lerp(focus_from_distance, focus_to_distance, weight)
+	update_camera()
 
 func deselect_sensor():
 	if selected_sensor < 0:
 		return
+	if camera_tween != null and is_instance_valid(camera_tween):
+		camera_tween.stop_all()
+		camera_tween.queue_free()
+		camera_tween = null
 	selected_sensor = -1
 	for i in range(sensor_buttons.size()):
 		sensor_buttons[i].modulate = Color(0.72, 0.80, 0.88, 1)
@@ -416,8 +445,11 @@ func deselect_sensor():
 	print("AERO_SENSOR_DESELECTED camera_gesture=true")
 
 func set_view(new_yaw, new_pitch):
+	deselect_sensor()
 	yaw = new_yaw
 	pitch = new_pitch
+	camera_target = Vector3(0, 0.55, 0)
+	distance = 10.5
 	update_camera()
 
 func update_readings(q):
