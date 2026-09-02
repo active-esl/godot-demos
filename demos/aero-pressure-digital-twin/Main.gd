@@ -225,7 +225,9 @@ func build_ui():
 	var views = HBoxContainer.new()
 	views.add_constant_override("separation", 8)
 	column.add_child(views)
-	for item in [["SIDE", -0.62, -0.30], ["FRONT", -1.57, -0.12], ["TOP", -0.62, -1.05]]:
+	# The imported model's nose points toward negative X: front therefore
+	# views along +X, while side views across the Z axis.
+	for item in [["SIDE", -1.57, -0.18], ["FRONT", -3.14159, -0.12], ["TOP", -0.62, -1.05]]:
 		var b = action_button(item[0])
 		b.connect("pressed", self, "set_view", [item[1], item[2]])
 		views.add_child(b)
