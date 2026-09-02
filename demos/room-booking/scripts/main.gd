@@ -14,6 +14,7 @@ var toast_timer: Timer
 var clock_timer: Timer
 var calendar_request: HTTPRequest
 var calendar_feed_url := ""
+var web_pointer_callback = null
 
 func _ready() -> void:
 	model = BookingModelClass.new()
@@ -21,6 +22,7 @@ func _ready() -> void:
 	_build_toast()
 	_build_clock_timer()
 	_build_web_calendar_feed()
+	_build_web_pointer_bridge()
 	meeting_card.connect("checkin_requested", self, "_on_checkin")
 	meeting_card.connect("extend_requested", self, "_on_extend")
 	meeting_card.connect("end_requested", self, "_on_end")
@@ -32,6 +34,32 @@ func _ready() -> void:
 	demo_controls.connect("reset_requested", self, "_on_reset")
 	_refresh()
 	print("ROOM_BOOKING_DEMO_READY")
+
+func _build_web_pointer_bridge() -> void:
+	if not OS.has_feature("HTML5"):
+		return
+	# The containing 3D product viewer owns pointer gesture arbitration and
+	# raycasts the LCD. Give it a stable application-level input boundary rather
+	# than redispatching synthetic DOM events into the export canvas.
+	web_pointer_callback = JavaScript.create_callback(self, "_on_web_pointer_tap")
+	var window = JavaScript.get_interface("window")
+	window.activePoeInput = web_pointer_callback
+	window.activePoeInputReady = true
+
+func _on_web_pointer_tap(args: Array) -> void:
+	if args.size() < 2:
+		return
+	var viewport_size := get_viewport_rect().size
+	var position := Vector2(clamp(float(args[0]), 0.0, 1.0) * viewport_size.x, clamp(float(args[1]), 0.0, 1.0) * viewport_size.y)
+	var press := InputEventMouseButton.new()
+	press.button_index = BUTTON_LEFT
+	press.position = position
+	press.global_position = position
+	press.pressed = true
+	Input.parse_input_event(press)
+	var release := press.duplicate()
+	release.pressed = false
+	Input.parse_input_event(release)
 
 func _refresh() -> void:
 	var snap = model.snapshot()
