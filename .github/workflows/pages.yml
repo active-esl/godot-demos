@@ -69,20 +69,30 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p dist/elanco-manufacturing-digital-twin dist/aero-pressure-digital-twin
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/room-booking --no-window -s scripts/model_smoke.gd \
+            | tee "${RUNNER_TEMP}/room-booking-smoke.log"
+          grep -q "ROOM_BOOKING_MODEL_SMOKE_OK" "${RUNNER_TEMP}/room-booking-smoke.log"
+          mkdir -p dist/elanco-manufacturing-digital-twin dist/aero-pressure-digital-twin dist/room-booking
           cp -R site/. dist/
           manufacturing_base="manufacturing-${GITHUB_SHA::12}"
           aero_base="aero-${GITHUB_SHA::12}"
+          booking_base="booking-${GITHUB_SHA::12}"
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/elanco-manufacturing-digital-twin \
             --export "Web" "$GITHUB_WORKSPACE/dist/elanco-manufacturing-digital-twin/${manufacturing_base}.html"
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/aero-pressure-digital-twin \
             --export "Web" "$GITHUB_WORKSPACE/dist/aero-pressure-digital-twin/${aero_base}.html"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/room-booking \
+            --export "Web" "$GITHUB_WORKSPACE/dist/room-booking/${booking_base}.html"
           mv "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.html" \
             dist/elanco-manufacturing-digital-twin/index.html
           mv "dist/aero-pressure-digital-twin/${aero_base}.html" \
             dist/aero-pressure-digital-twin/index.html
+          mv "dist/room-booking/${booking_base}.html" \
+            dist/room-booking/index.html
           test -s dist/index.html
           test -s dist/elanco-manufacturing-digital-twin/index.html
           test -s "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.wasm"
@@ -90,6 +100,9 @@ jobs:
           test -s dist/aero-pressure-digital-twin/index.html
           test -s "dist/aero-pressure-digital-twin/${aero_base}.wasm"
           test -s "dist/aero-pressure-digital-twin/${aero_base}.pck"
+          test -s dist/room-booking/index.html
+          test -s "dist/room-booking/${booking_base}.wasm"
+          test -s "dist/room-booking/${booking_base}.pck"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

@@ -12,6 +12,7 @@ independently while sharing a consistent engineering baseline.
 |------|--------|---------|--------|
 | [Elanco manufacturing digital twin](demos/elanco-manufacturing-digital-twin/) | Godot 3.6 / GLES2 | Simulated factory process, asset and quality views | [Web demo](https://active-esl.github.io/godot-demos/elanco-manufacturing-digital-twin/) |
 | [Aero pressure digital twin](demos/aero-pressure-digital-twin/) | Godot 3.6 / GLES2 | Touch-orbitable single-seater, virtual airflow and simulated pressure telemetry | [Web demo](https://active-esl.github.io/godot-demos/aero-pressure-digital-twin/) |
+| [Active-Edge room booking](demos/room-booking/) | Godot 3.6 / GLES2 | Meeting-room availability, agenda, check-in, extend and walk-up booking journey | [Web demo](https://active-esl.github.io/godot-demos/room-booking/) |
 
 The Elanco-themed demonstrator uses simulated data and public themes. It is an
 unofficial concept: it is not connected to an Elanco site or production system,

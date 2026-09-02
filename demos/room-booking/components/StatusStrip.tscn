@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://components/status_strip.gd" type="Script" id=1]
+
+[node name="StatusStrip" type="PanelContainer"]
+script = ExtResource( 1 )
+

@@ -1,0 +1,11 @@
+{
+  "room": "Atlas · 2.14",
+  "floor": "Second floor · East wing",
+  "bookings": [
+    {"id":"b1", "start":540, "end":600, "title":"Product design review", "host":"Maya Chen", "checked_in":false},
+    {"id":"b2", "start":630, "end":690, "title":"Customer onboarding", "host":"Daniel Brooks", "checked_in":true},
+    {"id":"b3", "start":780, "end":825, "title":"Project Aurora", "host":"Nina Patel", "checked_in":true},
+    {"id":"b4", "start":900, "end":960, "title":"Operations weekly", "host":"Sam Williams", "checked_in":true}
+  ]
+}
+
