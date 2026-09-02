@@ -140,9 +140,9 @@ jobs:
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/resilient-tactical-picture \
             --export-pack "Embedded PCK" \
-            "$GITHUB_WORKSPACE/dist/embedded/resilient-tactical-picture/active-edge-resilient-tactical-picture.pck"
+            "$GITHUB_WORKSPACE/dist/embedded/resilient-tactical-picture/active-edge-max-tablet.pck"
           timeout 30s "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
-            --main-pack "$GITHUB_WORKSPACE/dist/embedded/resilient-tactical-picture/active-edge-resilient-tactical-picture.pck" \
+            --main-pack "$GITHUB_WORKSPACE/dist/embedded/resilient-tactical-picture/active-edge-max-tablet.pck" \
             --no-window -s scripts/model_smoke.gd \
             | tee "${RUNNER_TEMP}/resilient-tactical-pack-smoke.log"
           grep -q "RESILIENT_TACTICAL_MODEL_SMOKE_OK" "${RUNNER_TEMP}/resilient-tactical-pack-smoke.log"
@@ -170,7 +170,7 @@ jobs:
           test -s dist/resilient-tactical-picture/index.html
           test -s "dist/resilient-tactical-picture/${tactical_base}.wasm"
           test -s "dist/resilient-tactical-picture/${tactical_base}.pck"
-          test -s dist/embedded/resilient-tactical-picture/active-edge-resilient-tactical-picture.pck
+          test -s dist/embedded/resilient-tactical-picture/active-edge-max-tablet.pck
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
