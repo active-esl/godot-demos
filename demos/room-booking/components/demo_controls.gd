@@ -24,8 +24,8 @@ func _ready() -> void:
 	var row := HBoxContainer.new()
 	row.add_constant_override("separation", 12)
 	margin.add_child(row)
-	var label := _label("EMBEDDED INTELLIGENCE. MADE REAL.", 13, MUTED, true)
-	label.rect_min_size.x = 210
+	var label := _label("LIVE CALENDAR · LOCAL ACTION PREVIEW", 13, MUTED, true)
+	label.rect_min_size.x = 290
 	row.add_child(label)
 	for spec in [["Next beat  →", "next_requested"], ["No-show", "noshow_requested"], ["Offline", "offline_requested"], ["Reset", "reset_requested"]]:
 		var button := Button.new()
@@ -40,8 +40,8 @@ func _ready() -> void:
 	progress.size_flags_horizontal = SIZE_EXPAND_FILL
 	row.add_child(progress)
 
-func configure(index: int, count: int, offline: bool) -> void:
-	progress.text = "Beat %d of %d%s  ·  Keys: N / X / O / R" % [index + 1, count, "  ·  OFFLINE" if offline else ""]
+func configure(index: int, count: int, offline: bool, clock_mode: String) -> void:
+	progress.text = "%s · Beat %d of %d%s  ·  Keys: N / X / O / R" % [clock_mode, index + 1, count, "  ·  OFFLINE" if offline else ""]
 
 func _label(value: String, size: int, colour: Color, bold: bool) -> Label:
 	var item := Label.new()

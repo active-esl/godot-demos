@@ -90,6 +90,10 @@ are checksum-verified and cached on self-hosted runners. As more demos are added
 CI should build each affected demo independently and assemble their outputs into
 one Pages artefact rather than coupling all projects into a single Godot export.
 
+The room-booking export refreshes its read-only, privacy-minimised Google
+Calendar snapshot every five minutes. Calendar credentials remain in GitHub
+Actions and are never included in the downloadable web application.
+
 ## Licensing
 
 Demo code is MIT licensed unless a demo directory states otherwise. Bundled

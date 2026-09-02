@@ -2,7 +2,8 @@ extends Reference
 class_name BookingModel
 
 const BEATS := [535, 540, 580, 605, 610]
-const CHECKIN_GRACE := 10
+const CHECKIN_GRACE := 8
+const RESERVED_LEAD := 15
 
 var room_name := "Atlas · 2.14"
 var floor_name := "Second floor · East wing"
@@ -10,6 +11,12 @@ var now_min := 535
 var offline := false
 var beat_index := 0
 var bookings := []
+var source := "fixture"
+var timezone_name := "Europe/London"
+var utc_offset_minutes := 0
+var schedule_day := ""
+var synced_at := ""
+var simulated_clock := false
 
 func load_day(path: String) -> bool:
 	var file := File.new()
@@ -22,15 +29,43 @@ func load_day(path: String) -> bool:
 	room_name = str(parsed.result.get("room", room_name))
 	floor_name = str(parsed.result.get("floor", floor_name))
 	bookings = parsed.result.get("bookings", []).duplicate(true)
+	bookings.sort_custom(self, "_sort_booking")
+	source = str(parsed.result.get("source", "fixture"))
+	timezone_name = str(parsed.result.get("timezone", "Europe/London"))
+	utc_offset_minutes = int(parsed.result.get("utc_offset_minutes", 0))
+	schedule_day = str(parsed.result.get("day", ""))
+	synced_at = str(parsed.result.get("synced_at", ""))
 	return true
 
-func reset() -> void:
+func reset(use_live_clock: bool = true) -> void:
 	beat_index = 0
-	now_min = BEATS[0]
 	offline = false
-	load_day("res://data/mock_day.json")
+	simulated_clock = not use_live_clock
+	if not load_day("res://data/calendar_day.json"):
+		load_day("res://data/mock_day.json")
+	if use_live_clock:
+		sync_clock()
+	else:
+		now_min = BEATS[0]
+
+func sync_clock() -> bool:
+	if simulated_clock:
+		return false
+	var utc := OS.get_datetime(true)
+	var updated := (int(utc.hour) * 60 + int(utc.minute) + utc_offset_minutes) % (24 * 60)
+	if updated < 0:
+		updated += 24 * 60
+	if updated == now_min:
+		return false
+	now_min = updated
+	return true
+
+func use_live_clock() -> void:
+	simulated_clock = false
+	sync_clock()
 
 func next_beat() -> void:
+	simulated_clock = true
 	beat_index = (beat_index + 1) % BEATS.size()
 	now_min = BEATS[beat_index]
 	apply_noshow(false)
@@ -46,7 +81,7 @@ func snapshot() -> Dictionary:
 	var state := "free"
 	if current != null:
 		state = "busy"
-	elif upcoming != null and int(upcoming.start) - now_min <= 10:
+	elif upcoming != null and int(upcoming.start) - now_min <= RESERVED_LEAD:
 		state = "reserved"
 	return {"current": current, "upcoming": upcoming, "state": state}
 
@@ -118,6 +153,18 @@ func free_slots() -> Array:
 func format_time(value: int) -> String:
 	return "%02d:%02d" % [int(value / 60), value % 60]
 
+func sync_label() -> String:
+	if offline:
+		return "Offline · cached agenda"
+	if source == "google":
+		return "Google Calendar · %s" % timezone_name
+	return "Demo calendar · %s" % timezone_name
+
+func is_live_calendar() -> bool:
+	return source == "google"
+
+func clock_mode_label() -> String:
+	return "Demo time" if simulated_clock else "Live time"
+
 func _sort_booking(a: Dictionary, b: Dictionary) -> bool:
 	return int(a.start) < int(b.start)
-

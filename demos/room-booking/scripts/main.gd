@@ -11,11 +11,13 @@ onready var demo_controls = $Layout/DemoControls
 var model
 var toast_label: Label
 var toast_timer: Timer
+var clock_timer: Timer
 
 func _ready() -> void:
 	model = BookingModelClass.new()
 	model.reset()
 	_build_toast()
+	_build_clock_timer()
 	meeting_card.connect("checkin_requested", self, "_on_checkin")
 	meeting_card.connect("extend_requested", self, "_on_extend")
 	meeting_card.connect("end_requested", self, "_on_end")
@@ -30,10 +32,10 @@ func _ready() -> void:
 
 func _refresh() -> void:
 	var snap = model.snapshot()
-	status_strip.configure(model.room_name, model.floor_name, snap.state, model.format_time(model.now_min), model.offline)
+	status_strip.configure(model.room_name, model.floor_name, snap.state, model.format_time(model.now_min), model.sync_label(), model.offline)
 	meeting_card.configure(snap, model)
 	agenda.configure(model.free_slots(), model)
-	demo_controls.configure(model.beat_index, model.BEATS.size(), model.offline)
+	demo_controls.configure(model.beat_index, model.BEATS.size(), model.offline, model.clock_mode_label())
 
 func _on_next() -> void:
 	model.next_beat()
@@ -51,23 +53,23 @@ func _on_offline() -> void:
 
 func _on_reset() -> void:
 	model.reset()
-	_show_toast("Demo reset to 08:55")
+	_show_toast("Live room time restored")
 	_refresh()
 
 func _on_checkin() -> void:
-	_show_toast("Checked in" if model.check_in() else "Check-in is not available")
+	_show_toast("Local preview · checked in" if model.check_in() else "Check-in is not available")
 	_refresh()
 
 func _on_extend() -> void:
-	_show_toast("Meeting extended by 15 minutes" if model.extend_current() else "Extension blocked by the next booking")
+	_show_toast("Local preview · extended by 15 minutes" if model.extend_current() else "Extension blocked by the next booking")
 	_refresh()
 
 func _on_end() -> void:
-	_show_toast("Meeting ended · room is free" if model.end_current() else "There is no meeting to end")
+	_show_toast("Local preview · room released" if model.end_current() else "There is no meeting to end")
 	_refresh()
 
 func _on_book_now() -> void:
-	_show_toast("Room booked for 30 minutes" if model.book_now() else "That time is unavailable")
+	_show_toast("Local preview · booked for 30 minutes" if model.book_now() else "That time is unavailable")
 	_refresh()
 
 func _on_book_slot(start_min: int) -> void:
@@ -109,6 +111,17 @@ func _build_toast() -> void:
 	toast_timer.wait_time = 2.2
 	toast_timer.connect("timeout", toast_label, "hide")
 	add_child(toast_timer)
+
+func _build_clock_timer() -> void:
+	clock_timer = Timer.new()
+	clock_timer.wait_time = 15.0
+	clock_timer.connect("timeout", self, "_on_clock_tick")
+	add_child(clock_timer)
+	clock_timer.start()
+
+func _on_clock_tick() -> void:
+	if model.sync_clock():
+		_refresh()
 
 func _show_toast(message: String) -> void:
 	toast_label.text = message

@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -66,6 +68,29 @@ jobs:
           unzip -oq "$download_dir/$templates" -d "${RUNNER_TEMP}/templates"
           cp -R "${RUNNER_TEMP}/templates/templates/." "$XDG_DATA_HOME/godot/templates/${GODOT_VERSION}.stable/"
           printf '%s' "$expected" > "$marker"
+
+      - name: Prepare room calendar snapshot
+        shell: bash
+        env:
+          AESL_ROOM_DISPLAY_GCAL_SA_JSON: ${{ secrets.AESL_ROOM_DISPLAY_GCAL_SA_JSON }}
+        run: |
+          set -euo pipefail
+          if test -n "${AESL_ROOM_DISPLAY_GCAL_SA_JSON}"; then
+            venv="${RUNNER_TOOL_CACHE}/aesl-gcal-export-v1"
+            if ! test -x "${venv}/bin/python"; then
+              python3.12 -m venv "${venv}"
+              "${venv}/bin/pip" install -r scripts/requirements-gcal.txt
+            fi
+            "${venv}/bin/python" scripts/gcal_export.py
+          else
+            python3.12 scripts/gcal_export.py \
+              --fixture scripts/fixtures/google_events.json \
+              --day 2026-09-02
+          fi
+
+      - name: Test room calendar adapter
+        shell: bash
+        run: python3.12 -m unittest scripts/test_gcal_export.py
 
       - name: Export HTML5 site
         shell: bash
