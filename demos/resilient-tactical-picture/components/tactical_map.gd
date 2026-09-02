@@ -15,12 +15,18 @@ var selected_id := ""
 var beat := 0
 var profile := "uk"
 var font: DynamicFont
+var ui_scale := 1.0
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	font = DynamicFont.new()
 	font.font_data = load("res://fonts/DejaVuSans-Bold.ttf")
 	font.size = 18
+
+func set_ui_scale(new_scale: float) -> void:
+	ui_scale = max(1.0, new_scale)
+	font.size = int(round(18.0 * ui_scale))
+	update()
 
 func configure(new_people: Array, new_selected: String, new_beat: int, new_profile: String) -> void:
 	people = new_people
@@ -39,9 +45,10 @@ func _draw() -> void:
 	_draw_legend()
 
 func _draw_grid() -> void:
-	for x in range(0, int(rect_size.x), 80):
+	var spacing := int(round(80.0 * ui_scale))
+	for x in range(0, int(rect_size.x), spacing):
 		draw_line(Vector2(x, 0), Vector2(x, rect_size.y), GRID, 1.0)
-	for y in range(0, int(rect_size.y), 80):
+	for y in range(0, int(rect_size.y), spacing):
 		draw_line(Vector2(0, y), Vector2(rect_size.x, y), GRID, 1.0)
 
 func _draw_site() -> void:
@@ -93,19 +100,19 @@ func _draw_person(person: Dictionary) -> void:
 	if person.status == "man_down": color = RED
 	elif person.status == "evacuation": color = AMBER
 	if person.id == "raven_4" and beat >= 3:
-		draw_circle(at, max(38.0, person.confidence * 9.0), Color(color.r, color.g, color.b, 0.10))
-		draw_arc(at, max(38.0, person.confidence * 9.0), 0.0, TAU, 56, Color(color.r, color.g, color.b, 0.45), 2.0)
+		draw_circle(at, max(38.0, person.confidence * 9.0) * ui_scale, Color(color.r, color.g, color.b, 0.10))
+		draw_arc(at, max(38.0, person.confidence * 9.0) * ui_scale, 0.0, TAU, 56, Color(color.r, color.g, color.b, 0.45), 2.0 * ui_scale)
 	if person.id == selected_id:
-		draw_arc(at, 34.0, 0.0, TAU, 40, Color("f5fbf8"), 3.0)
-	draw_circle(at, 23.0, Color("071310"))
-	draw_circle(at, 17.0, color)
-	draw_string(font, at + Vector2(32, 6), person.call, INK)
+		draw_arc(at, 34.0 * ui_scale, 0.0, TAU, 40, Color("f5fbf8"), 3.0 * ui_scale)
+	draw_circle(at, 23.0 * ui_scale, Color("071310"))
+	draw_circle(at, 17.0 * ui_scale, color)
+	draw_string(font, at + Vector2(32, 6) * ui_scale, person.call, INK)
 
 func _draw_legend() -> void:
-	draw_circle(Vector2(34, rect_size.y - 34), 7.0, GREEN)
-	draw_string(font, Vector2(51, rect_size.y - 27), "TRACKED" if profile == "uk" else "SUIVI", MUTED)
-	draw_circle(Vector2(174, rect_size.y - 34), 7.0, CYAN)
-	draw_string(font, Vector2(191, rect_size.y - 27), "GATEWAY" if profile == "uk" else "PASSERELLE", MUTED)
+	draw_circle(Vector2(34, rect_size.y / ui_scale - 34) * ui_scale, 7.0 * ui_scale, GREEN)
+	draw_string(font, Vector2(51, rect_size.y / ui_scale - 27) * ui_scale, "TRACKED" if profile == "uk" else "SUIVI", MUTED)
+	draw_circle(Vector2(174, rect_size.y / ui_scale - 34) * ui_scale, 7.0 * ui_scale, CYAN)
+	draw_string(font, Vector2(191, rect_size.y / ui_scale - 27) * ui_scale, "GATEWAY" if profile == "uk" else "PASSERELLE", MUTED)
 	draw_circle(Vector2(rect_size.x * 0.46, rect_size.y * 0.82), 18.0, CYAN)
 	draw_arc(Vector2(rect_size.x * 0.46, rect_size.y * 0.82), 29.0, 0.0, TAU, 40, Color("4694a9"), 2.0)
 
@@ -128,7 +135,7 @@ func _gui_input(event: InputEvent) -> void:
 		pressed = event.pressed
 	if not pressed: return
 	for person in people:
-		if point.distance_to(_to_screen(person.pos)) <= 48.0:
+		if point.distance_to(_to_screen(person.pos)) <= 48.0 * ui_scale:
 			emit_signal("person_selected", person.id)
 			accept_event()
 			return

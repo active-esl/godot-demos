@@ -59,6 +59,9 @@ const TEXT := {
 }
 
 onready var top_bar := $Layout/TopBar
+onready var content := $Layout/ContentMargin/Content
+onready var map_column := $Layout/ContentMargin/Content/MapColumn
+onready var side_panel := $Layout/ContentMargin/Content/SidePanel
 onready var map = $Layout/ContentMargin/Content/MapColumn/Map
 onready var team_list := $Layout/ContentMargin/Content/SidePanel/TeamList
 onready var incident_card := $Layout/ContentMargin/Content/SidePanel/IncidentCard
@@ -73,6 +76,9 @@ var regular: DynamicFont
 var bold: DynamicFont
 var clock_seconds := 52328
 var clock_timer: Timer
+var layout_mode := "landscape"
+var responsive_scale := 1.0
+var last_window_size := Vector2.ZERO
 
 func _ready() -> void:
 	model = ScenarioModel.new()
@@ -80,6 +86,8 @@ func _ready() -> void:
 	_apply_demo_overrides()
 	_build_fonts()
 	_apply_layout_style()
+	get_viewport().connect("size_changed", self, "_on_viewport_size_changed")
+	_apply_responsive_layout(OS.get_window_size())
 	map.connect("person_selected", self, "_on_person_selected")
 	language_button.connect("pressed", self, "_toggle_language")
 	next_button.connect("pressed", self, "_next")
@@ -92,6 +100,73 @@ func _ready() -> void:
 	clock_timer.start()
 	_refresh()
 	print("RESILIENT_TACTICAL_PICTURE_READY")
+
+func _on_viewport_size_changed() -> void:
+	_apply_responsive_layout(OS.get_window_size())
+
+func _apply_responsive_layout(window_size: Vector2) -> void:
+	if window_size == last_window_size:
+		return
+	last_window_size = window_size
+	# The project preserves its 1920-wide logical canvas when the browser or
+	# native window narrows. Compensate so type and controls retain a useful
+	# physical size instead of shrinking with that canvas.
+	responsive_scale = max(1.0, 1920.0 / max(window_size.x, 1.0))
+	var portrait := window_size.y > window_size.x
+	var narrow := window_size.x < 900.0
+	var compact := narrow or window_size.y < 1000.0
+	layout_mode = "portrait_compact" if portrait and compact else "portrait" if portrait else "landscape_compact" if compact else "landscape"
+	content.columns = 1 if portrait else 2
+	content.add_constant_override("hseparation", _scaled(20))
+	content.add_constant_override("vseparation", _scaled(14))
+	map_column.rect_min_size = Vector2(0, _scaled(470 if compact and portrait else 620 if portrait else 0))
+	side_panel.rect_min_size = Vector2(0 if portrait else _scaled(390 if compact else 505), _scaled(350) if compact and portrait else 0)
+	team_list.visible = not compact
+	$Layout/ContentMargin/Content/SidePanel/TeamHeader.visible = not compact
+	$Layout/TopBar/BearerSummary.visible = not narrow
+	$Layout/TopBar/Clock.visible = not portrait
+	$Layout/BottomBar/ScenarioLabel.visible = not narrow
+	$Layout/BottomBar/SimulationBadge.visible = not portrait and not compact
+	top_bar.rect_min_size.y = _scaled(92 if compact else 116)
+	$Layout/BottomBar.rect_min_size.y = _scaled(92 if compact else 112)
+	$Layout/TopBar/Brand.rect_min_size.x = 0 if narrow else _scaled(360 if portrait else 540)
+	$Layout/TopBar/BearerSummary.rect_min_size.x = _scaled(360 if portrait else 520 if compact else 620)
+	language_button.rect_min_size = Vector2(_scaled(112 if narrow else 132), _scaled(60 if compact else 68))
+	reset_button.rect_min_size = Vector2(_scaled(112 if narrow else 150), _scaled(64 if compact else 72))
+	previous_button.rect_min_size = Vector2(_scaled(145 if narrow else 180), _scaled(64 if compact else 72))
+	next_button.rect_min_size = Vector2(_scaled(195 if narrow else 250), _scaled(64 if compact else 72))
+	$Layout/BottomBar/ScenarioLabel.rect_min_size.x = _scaled(300)
+	$Layout/ContentMargin.add_constant_override("margin_left", _scaled(14 if compact else 26))
+	$Layout/ContentMargin.add_constant_override("margin_right", _scaled(14 if compact else 26))
+	$Layout/ContentMargin.add_constant_override("margin_top", _scaled(10 if compact else 18))
+	$Layout/ContentMargin.add_constant_override("margin_bottom", _scaled(10 if compact else 18))
+	$Layout/TopBar/Brand/Title.add_font_override("font", _font(_scaled(22 if narrow else 27 if portrait else 31), true))
+	$Layout/TopBar/Brand/Subtitle.add_font_override("font", _font(_scaled(14 if compact else 17), true))
+	$Layout/ContentMargin/Content/SidePanel/IncidentCard.rect_min_size.y = _scaled(150 if compact else 164)
+	$Layout/ContentMargin/Content/SidePanel/SelectedCard.rect_min_size.y = _scaled(180 if compact else 196)
+	_apply_responsive_typography(compact)
+	$Layout/ContentMargin/Content/MapColumn/MapHeader/MapMode.visible = not narrow
+	for button in [language_button, next_button, previous_button, reset_button]:
+		button.add_font_override("font", _font(_scaled(14 if narrow else 16 if compact else 18), true))
+	_refresh_team()
+	map.set_ui_scale(responsive_scale)
+
+func _apply_responsive_typography(compact: bool) -> void:
+	$Layout/TopBar/BearerSummary.add_font_override("font", _font(_scaled(16 if compact else 18), true))
+	$Layout/TopBar/Clock.add_font_override("font", _font(_scaled(18 if compact else 22), true))
+	$Layout/ContentMargin/Content/MapColumn/MapHeader/MapTitle.add_font_override("font", _font(_scaled(16 if compact else 19), true))
+	$Layout/ContentMargin/Content/MapColumn/MapHeader/MapMode.add_font_override("font", _font(_scaled(14 if compact else 17), true))
+	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentLabel.add_font_override("font", _font(_scaled(13 if compact else 15), true))
+	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentState.add_font_override("font", _font(_scaled(22 if compact else 27), true))
+	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentDetail.add_font_override("font", _font(_scaled(15 if compact else 17), false))
+	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedName.add_font_override("font", _font(_scaled(23 if compact else 28), true))
+	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedRole.add_font_override("font", _font(_scaled(15 if compact else 17), true))
+	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedMetrics.add_font_override("font", _font(_scaled(15 if compact else 18), false))
+	$Layout/BottomBar/ScenarioLabel.add_font_override("font", _font(_scaled(16 if compact else 18), true))
+	$Layout/BottomBar/SimulationBadge.add_font_override("font", _font(_scaled(14 if compact else 16), true))
+
+func _scaled(value: int) -> int:
+	return int(round(float(value) * responsive_scale))
 
 func _apply_demo_overrides() -> void:
 	# Optional deterministic state for review captures and automated visual checks.
@@ -184,11 +259,11 @@ func _refresh_team() -> void:
 	for child in team_list.get_children(): child.queue_free()
 	for person in model.all_people():
 		var button := Button.new()
-		button.rect_min_size = Vector2(0, 70)
+		button.rect_min_size = Vector2(0, _scaled(70))
 		button.align = Button.ALIGN_LEFT
 		var status_key: String = "row_%s" % person.status
 		button.text = "  ●  %s     %s     %d%%" % [person.call, t[status_key], person.battery]
-		button.add_font_override("font", _font(18, true))
+		button.add_font_override("font", _font(_scaled(18), true))
 		var color: Color = RED if person.status == "man_down" else AMBER if person.status == "evacuation" else GREEN
 		button.add_color_override("font_color", color if person.id == model.selected_id else INK)
 		button.add_stylebox_override("normal", _box(PANEL_ALT if person.id == model.selected_id else PANEL, color if person.id == model.selected_id else Color("1d3934"), 7))
