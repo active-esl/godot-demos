@@ -13,7 +13,7 @@ const CYAN := Color("68bfe8")
 
 const TEXT := {
 	"en": {
-		"title":"MAX TABLET", "subtitle":"RESILIENT NETWORK ROUTING // EXERCISE ORION",
+		"title":"MAX Tablet", "subtitle":"RESILIENT NETWORK ROUTING // EXERCISE ORION",
 		"map_title":"NETWORK TOPOLOGY / TACTICAL MAP", "nodes":"NETWORK NODES", "online":"%02d ONLINE",
 		"route_status":"ROUTE STATUS", "reset":"RESET", "previous":"‹ PREVIOUS", "next":"NEXT EVENT  ›",
 		"simulated":"● EXERCISE • SIMULATED", "node_type":"NODE TYPE", "bearers":"BEARERS", "battery":"BATTERY",
@@ -34,7 +34,7 @@ const TEXT := {
 		"route_restored":["PRIMARY ROUTE RESTORED", "Best path selected • queued traffic synchronised", "RECOVERY & SYNC"]
 	},
 	"fr": {
-		"title":"MAX TABLET", "subtitle":"ROUTAGE RÉSEAU RÉSILIENT // EXERCICE ORION",
+		"title":"MAX Tablet", "subtitle":"ROUTAGE RÉSEAU RÉSILIENT // EXERCICE ORION",
 		"map_title":"TOPOLOGIE RÉSEAU / CARTE TACTIQUE", "nodes":"NŒUDS RÉSEAU", "online":"%02d EN LIGNE",
 		"route_status":"ÉTAT DE L’ITINÉRAIRE", "reset":"RÉINITIALISER", "previous":"‹ PRÉCÉDENT", "next":"ÉVÉNEMENT SUIVANT  ›",
 		"simulated":"● EXERCICE • DONNÉES SIMULÉES", "node_type":"TYPE DE NŒUD", "bearers":"LIAISONS", "battery":"BATTERIE",

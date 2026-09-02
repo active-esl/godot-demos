@@ -20,7 +20,7 @@ _global_script_class_icons={
 
 [application]
 
-config/name="MAX TABLET"
+config/name="MAX Tablet"
 run/main_scene="res://Main.tscn"
 
 [display]
