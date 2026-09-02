@@ -29,10 +29,10 @@ size_flags_horizontal = 3
 custom_constants/separation = 3
 
 [node name="Title" type="Label" parent="Layout/TopBar/Brand"]
-text = "RESILIENT TACTICAL PICTURE"
+text = "MAX TABLET"
 
 [node name="Subtitle" type="Label" parent="Layout/TopBar/Brand"]
-text = "QUADLOC // EXERCISE ORION"
+text = "RESILIENT TACTICAL PICTURE // EXERCISE ORION"
 
 [node name="BearerSummary" type="Label" parent="Layout/TopBar"]
 rect_min_size = Vector2( 620, 64 )

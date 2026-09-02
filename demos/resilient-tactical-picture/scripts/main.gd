@@ -13,7 +13,7 @@ const CYAN := Color("68bfe8")
 
 const TEXT := {
 	"en": {
-		"title":"RESILIENT TACTICAL PICTURE", "subtitle":"QUADLOC // EXERCISE ORION",
+		"title":"MAX TABLET", "subtitle":"RESILIENT TACTICAL PICTURE // EXERCISE ORION",
 		"map_title":"LIVE OPERATIONAL VIEW", "team":"TEAM ALPHA", "online":"05 ONLINE",
 		"incident":"INCIDENT STATUS", "reset":"RESET", "previous":"‹ PREVIOUS", "next":"NEXT EVENT  ›",
 		"simulated":"● EXERCISE • SIMULATED", "position":"POSITION", "bearer":"BEARER", "battery":"BATTERY",
@@ -35,7 +35,7 @@ const TEXT := {
 		"sync_restored":["LINK RESTORED", "Incident record synchronised • no events lost", "RECOVERY & SYNC"]
 	},
 	"fr": {
-		"title":"SITUATION TACTIQUE RÉSILIENTE", "subtitle":"QUADLOC // EXERCICE ORION",
+		"title":"MAX TABLET", "subtitle":"SITUATION TACTIQUE RÉSILIENTE // EXERCICE ORION",
 		"map_title":"VUE OPÉRATIONNELLE EN DIRECT", "team":"ÉQUIPE ALPHA", "online":"05 EN LIGNE",
 		"incident":"ÉTAT DE L’INCIDENT", "reset":"RÉINITIALISER", "previous":"‹ PRÉCÉDENT", "next":"ÉVÉNEMENT SUIVANT  ›",
 		"simulated":"● EXERCICE • DONNÉES SIMULÉES", "position":"POSITION", "bearer":"LIAISON", "battery":"BATTERIE",

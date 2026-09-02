@@ -1,9 +1,10 @@
-# Resilient Tactical Picture
+# MAX TABLET
 
-A touch-first, QuadLoc-derived situational-awareness demonstration for the
-Active-Edge Jaguar embedded display platform. It combines simulated personnel
-tags, UWB/GNSS positioning confidence, ad-hoc mesh status, bearer degradation,
-priority alerting, casualty evacuation and offline-to-online synchronisation.
+**MAX TABLET** is a touch-first, QuadLoc-derived resilient tactical picture
+demonstration for the Active-Edge Jaguar embedded display platform. It combines
+simulated personnel tags, UWB/GNSS positioning confidence, ad-hoc mesh status,
+bearer degradation, priority alerting, casualty evacuation and
+offline-to-online synchronisation.
 
 The seven-beat deterministic story is suitable for a short customer demo:
 
