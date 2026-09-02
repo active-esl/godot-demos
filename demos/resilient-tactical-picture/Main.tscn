@@ -58,7 +58,8 @@ custom_constants/margin_top = 18
 custom_constants/margin_right = 26
 custom_constants/margin_bottom = 18
 
-[node name="Content" type="HBoxContainer" parent="Layout/ContentMargin"]
+[node name="Content" type="GridContainer" parent="Layout/ContentMargin"]
+columns = 2
 custom_constants/separation = 20
 
 [node name="MapColumn" type="VBoxContainer" parent="Layout/ContentMargin/Content"]
@@ -96,6 +97,7 @@ text = "INCIDENT STATUS"
 
 [node name="IncidentState" type="Label" parent="Layout/ContentMargin/Content/SidePanel/IncidentCard"]
 text = "TEAM DEPLOYED"
+autowrap = true
 
 [node name="IncidentDetail" type="Label" parent="Layout/ContentMargin/Content/SidePanel/IncidentCard"]
 text = "5 personnel tracked • all systems nominal"
@@ -127,6 +129,7 @@ text = "MEDIC • ACTIVE"
 
 [node name="SelectedMetrics" type="Label" parent="Layout/ContentMargin/Content/SidePanel/SelectedCard"]
 text = "POSITION  1.2 m confidence\nBEARER    UWB + GNSS\nBATTERY   91%  •  18 h"
+autowrap = true
 
 [node name="BottomBar" type="HBoxContainer" parent="Layout"]
 rect_min_size = Vector2( 0, 112 )
