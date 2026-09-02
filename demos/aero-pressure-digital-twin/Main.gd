@@ -283,7 +283,13 @@ func _input(event):
 	# nodes. Observe the stream before GUI dispatch, but only claim gestures
 	# that begin in the 3D viewport so the controls column remains interactive.
 	if event is InputEventScreenTouch:
-		if event.pressed and orbit_region_has_point(event.position):
+		if event.pressed:
+			var zone = sensor_zone_at(event.position)
+			if zone >= 0:
+				select_sensor(zone)
+				get_tree().set_input_as_handled()
+				return
+		if event.pressed and (orbit_region_has_point(event.position) or not touch_points.empty()):
 			touch_points[event.index] = event.position
 			if touch_points.size() == 1:
 				begin_orbit(event.position)
@@ -307,7 +313,12 @@ func _input(event):
 		get_tree().set_input_as_handled()
 	elif event is InputEventMouseButton and event.button_index == BUTTON_LEFT:
 		if touch_points.empty():
-			if event.pressed and orbit_region_has_point(event.position):
+			var zone = sensor_zone_at(event.position)
+			if event.pressed and zone >= 0:
+				select_sensor(zone)
+				get_tree().set_input_as_handled()
+				return
+			elif event.pressed and orbit_region_has_point(event.position):
 				begin_orbit(event.position)
 			else:
 				dragging = false
@@ -317,6 +328,12 @@ func _input(event):
 
 func orbit_region_has_point(position):
 	return position.x < get_viewport().size.x * 0.75 and position.y > 112.0
+
+func sensor_zone_at(position):
+	for i in range(sensor_buttons.size()):
+		if sensor_buttons[i].get_global_rect().has_point(position):
+			return i
+	return -1
 
 func begin_orbit(position):
 	dragging = true
@@ -367,6 +384,7 @@ func select_sensor(index):
 	selected_sensor = index
 	for i in range(sensor_buttons.size()):
 		sensor_buttons[i].modulate = WHITE if i == index else Color(0.72, 0.80, 0.88, 1)
+		sensor_buttons[i].text = ("● " if i == index else "  ") + "%02d %s" % [i + 1, sensor_names[i]]
 	print("AERO_SENSOR_SELECTED zone=%02d name=%s" % [index + 1, sensor_names[index]])
 
 func set_view(new_yaw, new_pitch):
