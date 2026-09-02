@@ -13,6 +13,7 @@ independently while sharing a consistent engineering baseline.
 | [Elanco manufacturing digital twin](demos/elanco-manufacturing-digital-twin/) | Godot 3.6 / GLES2 | Simulated factory process, asset and quality views | [Web demo](https://active-esl.github.io/godot-demos/elanco-manufacturing-digital-twin/) |
 | [Aero pressure digital twin](demos/aero-pressure-digital-twin/) | Godot 3.6 / GLES2 | Touch-orbitable single-seater, virtual airflow and simulated pressure telemetry | [Web demo](https://active-esl.github.io/godot-demos/aero-pressure-digital-twin/) |
 | [Active-Edge room booking](demos/room-booking/) | Godot 3.6 / GLES2 | Meeting-room availability, agenda, check-in, extend and walk-up booking journey | [Web demo](https://active-esl.github.io/godot-demos/room-booking/) |
+| [Resilient tactical picture](demos/resilient-tactical-picture/) | Godot 3.6 / GLES2 | QuadLoc-derived personnel positioning, mesh resilience, incident response and bilingual operation | [Web demo](https://active-esl.github.io/godot-demos/resilient-tactical-picture/) |
 
 The Elanco-themed demonstrator uses simulated data and public themes. It is an
 unofficial concept: it is not connected to an Elanco site or production system,
@@ -21,6 +22,10 @@ and no endorsement or access to Elanco systems is implied.
 The aero demonstrator is deliberately customer-anonymous. Its procedural car,
 pressure zones and values are fictional and do not reproduce any customer
 vehicle, geometry, installation or dataset.
+
+The resilient tactical picture uses fictional callsigns, positions, incidents
+and network events. It is a product demonstrator rather than an operational or
+certified safety system, and contains no real personnel or military data.
 
 ## Repository layout
 

@@ -100,11 +100,20 @@ jobs:
             --path demos/room-booking --no-window -s scripts/model_smoke.gd \
             | tee "${RUNNER_TEMP}/room-booking-smoke.log"
           grep -q "ROOM_BOOKING_MODEL_SMOKE_OK" "${RUNNER_TEMP}/room-booking-smoke.log"
-          mkdir -p dist/elanco-manufacturing-digital-twin dist/aero-pressure-digital-twin dist/room-booking
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/resilient-tactical-picture --no-window -s scripts/model_smoke.gd \
+            | tee "${RUNNER_TEMP}/resilient-tactical-smoke.log"
+          grep -q "RESILIENT_TACTICAL_MODEL_SMOKE_OK" "${RUNNER_TEMP}/resilient-tactical-smoke.log"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/resilient-tactical-picture --no-window -s scripts/ui_smoke.gd \
+            | tee "${RUNNER_TEMP}/resilient-tactical-ui-smoke.log"
+          grep -q "RESILIENT_TACTICAL_UI_SMOKE_OK" "${RUNNER_TEMP}/resilient-tactical-ui-smoke.log"
+          mkdir -p dist/elanco-manufacturing-digital-twin dist/aero-pressure-digital-twin dist/room-booking dist/resilient-tactical-picture
           cp -R site/. dist/
           manufacturing_base="manufacturing-${GITHUB_SHA::12}"
           aero_base="aero-${GITHUB_SHA::12}"
           booking_base="booking-${GITHUB_SHA::12}"
+          tactical_base="tactical-${GITHUB_SHA::12}"
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/elanco-manufacturing-digital-twin \
             --export "Web" "$GITHUB_WORKSPACE/dist/elanco-manufacturing-digital-twin/${manufacturing_base}.html"
@@ -114,6 +123,9 @@ jobs:
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/room-booking \
             --export "Web" "$GITHUB_WORKSPACE/dist/room-booking/${booking_base}.html"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/resilient-tactical-picture \
+            --export "Web" "$GITHUB_WORKSPACE/dist/resilient-tactical-picture/${tactical_base}.html"
           mkdir -p dist/embedded/room-booking
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/room-booking \
@@ -124,12 +136,24 @@ jobs:
             --no-window -s scripts/model_smoke.gd \
             | tee "${RUNNER_TEMP}/room-booking-pack-smoke.log"
           grep -q "ROOM_BOOKING_MODEL_SMOKE_OK" "${RUNNER_TEMP}/room-booking-pack-smoke.log"
+          mkdir -p dist/embedded/resilient-tactical-picture
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/resilient-tactical-picture \
+            --export-pack "Embedded PCK" \
+            "$GITHUB_WORKSPACE/dist/embedded/resilient-tactical-picture/active-edge-resilient-tactical-picture.pck"
+          timeout 30s "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --main-pack "$GITHUB_WORKSPACE/dist/embedded/resilient-tactical-picture/active-edge-resilient-tactical-picture.pck" \
+            --no-window -s scripts/model_smoke.gd \
+            | tee "${RUNNER_TEMP}/resilient-tactical-pack-smoke.log"
+          grep -q "RESILIENT_TACTICAL_MODEL_SMOKE_OK" "${RUNNER_TEMP}/resilient-tactical-pack-smoke.log"
           mv "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.html" \
             dist/elanco-manufacturing-digital-twin/index.html
           mv "dist/aero-pressure-digital-twin/${aero_base}.html" \
             dist/aero-pressure-digital-twin/index.html
           mv "dist/room-booking/${booking_base}.html" \
             dist/room-booking/index.html
+          mv "dist/resilient-tactical-picture/${tactical_base}.html" \
+            dist/resilient-tactical-picture/index.html
           cp demos/room-booking/data/calendar_day.json dist/room-booking/calendar_day.json
           test -s dist/index.html
           test -s dist/elanco-manufacturing-digital-twin/index.html
@@ -143,6 +167,10 @@ jobs:
           test -s "dist/room-booking/${booking_base}.pck"
           test -s dist/room-booking/calendar_day.json
           test -s dist/embedded/room-booking/active-edge-room-booking.pck
+          test -s dist/resilient-tactical-picture/index.html
+          test -s "dist/resilient-tactical-picture/${tactical_base}.wasm"
+          test -s "dist/resilient-tactical-picture/${tactical_base}.pck"
+          test -s dist/embedded/resilient-tactical-picture/active-edge-resilient-tactical-picture.pck
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
