@@ -1,70 +1,86 @@
 # MAX TABLET
 
-**MAX TABLET** is a touch-first, QuadLoc-derived resilient tactical picture
-demonstration for the Active-Edge Jaguar embedded display platform. It combines
-simulated personnel tags, UWB/GNSS positioning confidence, ad-hoc mesh status,
-bearer degradation, priority alerting, casualty evacuation and
-offline-to-online synchronisation.
+**MAX TABLET** is a touch-first resilient network-routing demonstration for the
+Active-Edge Jaguar embedded display platform. It maps fictional heterogeneous
+network nodes, calculates a path between two selected endpoints and visibly
+reroutes traffic as links degrade or a relay disappears.
 
-The seven-beat deterministic story is suitable for a short customer demo:
+The deterministic seven-beat story is designed for a short review with Max:
 
-1. Deploy a fictional five-person team.
-2. Form the local mesh.
-3. Degrade the primary communications bearer.
-4. Continue tracking indoors without GNSS and show reduced confidence.
-5. Receive a simulated man-down alert.
-6. Assign an extraction point and share the route locally.
-7. Restore the link and synchronise the complete incident record.
+1. Discover five fictional network nodes.
+2. Calculate the lowest-cost route from HQ-7 to TEAM-ALPHA.
+3. Detect a degraded link and reroute automatically.
+4. Lose RELAY-2 while maintaining a path through VEHICLE-4.
+5. Fall back to a constrained direct UHF path.
+6. Show local store-and-forward readiness.
+7. Restore and optimise the primary route.
 
-Tap personnel markers or team rows to inspect them. Use **Next event** and
-**Previous** to run the story, **Reset** to return to the opening state, and
-**FR/EN** to switch the complete interface between British English and French.
-Keyboard equivalents are `N`/right, `P`/left, `R`, and `L`.
+Tap any map node or node-list row to make it the route source, then tap a
+different node to choose the destination. Use **Next event** and **Previous** to
+run the story, **Reset** to return to the opening state, and **FR/EN** to switch
+the complete interface between British English and French. Keyboard equivalents
+are `N`/right, `P`/left, `R`, and `L`.
 
-MAX TABLET defaults explicitly to landscape and opens at 1920×1200. That is the
-primary tactical layout and does not depend on an accelerometer: the embedded
-Linux display stack and launcher present a fixed landscape output. Browser
-touch and native touchscreen input are both supported.
+## First-cut assumptions for Max review
 
-The same scene remains responsive when presented with a portrait viewport for
-web previews or a deliberately rotated display configuration. Portrait stacks
-the map above the operational panel. On narrow phones, secondary bearer, clock
-and team-list detail is collapsed so the map, selected-person state, incident
-alert and touch navigation remain usable without horizontal scrolling.
+These are design hypotheses, not confirmed customer requirements:
 
-For a mobile demonstration, open the published web build directly in a modern
-phone or tablet browser. The web layout responds in place when the browser
-viewport changes; a packaged handheld build requests landscape by default.
+- “Route” means a communications/data path between network nodes, not personnel
+  navigation or vehicle route planning.
+- The useful first picture combines a geographic backdrop with a network
+  topology overlay.
+- The five node types are fictional examples: command post, fixed/portable
+  relays, vehicle gateway and dismounted team.
+- The tablet automatically chooses a weighted lowest-cost available path and
+  makes degraded and offline links unambiguous.
+- Cost, latency, quality, battery values and bearer labels are illustrative demo
+  data, not measurements or a proposed radio configuration.
+- The demo contains no real network protocol, radio integration, encryption,
+  key management or military data.
+- No STANAG, MIL-STD, DEF STAN or French defence-standard compliance is claimed.
+  The visual language is deliberately generic pending Max’s review.
 
-Automated review captures can select a deterministic state with
+After Max has seen this cut, the outstanding questions are the intended meaning
+of routing, actual node and bearer types, route-selection priorities, data
+sources, interoperability standards, security domain, offline behaviour and
+the target operational workflow. Those questions remain tracked separately so
+the first conversation can be grounded in something concrete.
+
+## Display and mobile behaviour
+
+MAX TABLET defaults explicitly to landscape and opens at 1920×1200. This does
+not depend on an accelerometer: the embedded Linux display stack and launcher
+present a fixed landscape output. Browser touch and native touchscreen input
+are both supported.
+
+The same scene remains responsive in portrait for web previews or a deliberately
+rotated display configuration. Portrait stacks the map above the operational
+panel. On narrow phones, secondary summary, clock and node-list detail collapse
+so the map, selected-node state, route status and touch navigation remain usable
+without horizontal scrolling.
+
+Automated review captures can select deterministic state with
 `TACTICAL_DEMO_PROFILE=uk|fr` and `TACTICAL_DEMO_BEAT=0..6`.
 
-## Run
+## Run and test
 
-The project targets Godot 3.6 and GLES2. Its reference display remains
-1920×1200, with responsive layouts for tablet and phone portrait/landscape:
+The project targets Godot 3.6 and GLES2:
 
 ```sh
 ./run-demo.sh
-```
-
-Model smoke:
-
-```sh
 godot3 --video-driver GLES2 --path . --no-window -s scripts/model_smoke.gd
 godot3 --video-driver GLES2 --path . --no-window -s scripts/ui_smoke.gd
 ```
 
 ## Demonstration and safety boundaries
 
-- Every callsign, position, status and network event is fictional and simulated.
-- The interface shows uncertainty explicitly rather than claiming false location
-  precision.
+- Every node, position, route, status and network event is fictional and
+  simulated.
+- Degraded, constrained and offline states are shown explicitly.
 - No real personnel data, frequencies, cryptographic material or operational
   procedures are included.
-- References to bearers describe product behaviour conceptually, not a deployed
-  military communications configuration.
-- This software is a product demonstrator, not a certified safety system.
+- This software is a product demonstrator, not an operational or certified
+  safety system.
 
 Code is MIT licensed under the repository licence. The bundled DejaVu fonts
 retain their own licence in `fonts/LICENSE.txt`.

@@ -13,48 +13,46 @@ const CYAN := Color("68bfe8")
 
 const TEXT := {
 	"en": {
-		"title":"MAX TABLET", "subtitle":"RESILIENT TACTICAL PICTURE // EXERCISE ORION",
-		"map_title":"LIVE OPERATIONAL VIEW", "team":"TEAM ALPHA", "online":"05 ONLINE",
-		"incident":"INCIDENT STATUS", "reset":"RESET", "previous":"‹ PREVIOUS", "next":"NEXT EVENT  ›",
-		"simulated":"● EXERCISE • SIMULATED", "position":"POSITION", "bearer":"BEARER", "battery":"BATTERY",
-		"updated":"UPDATED", "source":"SOURCE", "seconds":"s ago", "profile":"UK PROFILE",
-		"team_lead":"TEAM LEAD", "medic":"MEDIC", "comms":"COMMS", "specialist":"SPECIALIST", "support":"SUPPORT",
-		"row_active":"ACTIVE", "row_man_down":"MAN DOWN", "row_evacuation":"EVAC",
-		"bearer_ready":"MESH 05  •  UWB 05  •  PRIMARY READY  •  QUEUE 00",
-		"bearer_lost":"PRIMARY LOST  •  LOCAL ACTIVE  •  QUEUE 03",
-		"bearer_restored":"PRIMARY RESTORED  •  SYNC COMPLETE  •  QUEUE 00",
-		"fusion_normal":"LOCAL FUSION  •  1.8 m MEDIAN", "fusion_low":"LOCAL FUSION  •  6.8 m CONFIDENCE", "fusion_improving":"LOCAL FUSION  •  3.4 m CONFIDENCE",
-		"confidence":"radius", "hours":"h", "active":"ACTIVE", "man_down":"MAN DOWN", "evacuation":"EVACUATION",
-		"fused":"FUSED", "estimated":"ESTIMATED",
-		"deployment":["TEAM DEPLOYED", "5 personnel tracked • all systems nominal", "DEPLOYMENT"],
-		"mesh_ready":["MESH ESTABLISHED", "Ad-hoc network formed in 42 seconds", "MESH FORMATION"],
-		"link_degraded":["PRIMARY LINK DEGRADED", "Local picture maintained • alternate bearers active", "COMMS DEGRADATION"],
-		"indoor_tracking":["GNSS LOST — RAVEN 4", "UWB mesh estimate active • confidence 6.8 m", "INDOOR TRACKING"],
-		"casualty_alert":["MAN DOWN — RAVEN 4", "Priority alert received • location confidence improving", "PRIORITY ALERT"],
-		"extraction":["EXTRACTION ASSIGNED", "Route shared locally • team acknowledged", "CASUALTY EVACUATION"],
-		"sync_restored":["LINK RESTORED", "Incident record synchronised • no events lost", "RECOVERY & SYNC"]
+		"title":"MAX TABLET", "subtitle":"RESILIENT NETWORK ROUTING // EXERCISE ORION",
+		"map_title":"NETWORK TOPOLOGY / TACTICAL MAP", "nodes":"NETWORK NODES", "online":"%02d ONLINE",
+		"route_status":"ROUTE STATUS", "reset":"RESET", "previous":"‹ PREVIOUS", "next":"NEXT EVENT  ›",
+		"simulated":"● EXERCISE • SIMULATED", "node_type":"NODE TYPE", "bearers":"BEARERS", "battery":"BATTERY",
+		"updated":"UPDATED", "seconds":"s ago", "command":"COMMAND", "relay":"RELAY", "vehicle":"VEHICLE", "dismounted":"DISMOUNTED",
+		"active":"ACTIVE", "offline":"OFFLINE", "constrained":"CONSTRAINED", "select_destination":"SELECT DESTINATION",
+		"select_detail":"Source %s selected • tap another node", "no_route":"NO ROUTE AVAILABLE", "hops":"HOPS", "quality":"Q",
+		"summary_ready":"NODES 05  •  LINKS 07  •  AUTO ROUTING  •  QUEUE 00",
+		"summary_degraded":"LINK DEGRADED  •  AUTO REROUTE ACTIVE  •  QUEUE 03",
+		"summary_offline":"RELAY-2 OFFLINE  •  ALTERNATE PATH ACTIVE  •  QUEUE 03",
+		"summary_constrained":"PATH CONSTRAINED  •  STORE-FORWARD READY  •  QUEUE 07",
+		"summary_restored":"PRIMARY RESTORED  •  ROUTE OPTIMISED  •  QUEUE 00",
+		"nodes_discovered":["NETWORK DISCOVERED", "5 fictional nodes discovered • tap source, then destination", "NODE DISCOVERY"],
+		"route_computed":["ROUTE COMPUTED", "HQ-7 to TEAM-ALPHA • lowest-cost available path", "ROUTE SELECTION"],
+		"link_degraded":["LINK DEGRADED", "Quality loss detected • route recalculated automatically", "AUTOMATIC REROUTE"],
+		"relay_offline":["RELAY-2 OFFLINE", "Traffic moved to HF and vehicle relay • service maintained", "NODE LOSS"],
+		"route_constrained":["PATH CONSTRAINED", "Direct UHF path selected • reduced route quality", "CONSTRAINED NETWORK"],
+		"store_forward":["STORE-FORWARD READY", "Messages queued locally until a stronger path returns", "DISCONNECTED OPERATION"],
+		"route_restored":["PRIMARY ROUTE RESTORED", "Best path selected • queued traffic synchronised", "RECOVERY & SYNC"]
 	},
 	"fr": {
-		"title":"MAX TABLET", "subtitle":"SITUATION TACTIQUE RÉSILIENTE // EXERCICE ORION",
-		"map_title":"VUE OPÉRATIONNELLE EN DIRECT", "team":"ÉQUIPE ALPHA", "online":"05 EN LIGNE",
-		"incident":"ÉTAT DE L’INCIDENT", "reset":"RÉINITIALISER", "previous":"‹ PRÉCÉDENT", "next":"ÉVÉNEMENT SUIVANT  ›",
-		"simulated":"● EXERCICE • DONNÉES SIMULÉES", "position":"POSITION", "bearer":"LIAISON", "battery":"BATTERIE",
-		"updated":"ACTUALISÉ", "source":"SOURCE", "seconds":"s", "profile":"PROFIL FRANCE",
-		"team_lead":"CHEF D’ÉQUIPE", "medic":"AUXILIAIRE SANITAIRE", "comms":"TRANSMISSIONS", "specialist":"SPÉCIALISTE", "support":"APPUI",
-		"row_active":"ACTIF", "row_man_down":"À TERRE", "row_evacuation":"ÉVAC.",
-		"bearer_ready":"MAILLE 05  •  UWB 05  •  LIAISON PRÊTE  •  FILE 00",
-		"bearer_lost":"LIAISON PERDUE  •  LOCAL ACTIF  •  FILE 03",
-		"bearer_restored":"LIAISON RÉTABLIE  •  SYNCHRO TERMINÉE  •  FILE 00",
-		"fusion_normal":"FUSION LOCALE  •  MÉDIANE 1,8 m", "fusion_low":"FUSION LOCALE  •  FIABILITÉ 6,8 m", "fusion_improving":"FUSION LOCALE  •  FIABILITÉ 3,4 m",
-		"confidence":"de rayon", "hours":"h", "active":"ACTIF", "man_down":"HOMME À TERRE", "evacuation":"ÉVACUATION",
-		"fused":"FUSIONNÉE", "estimated":"ESTIMÉE",
-		"deployment":["ÉQUIPE DÉPLOYÉE", "5 personnes suivies • systèmes opérationnels", "DÉPLOIEMENT"],
-		"mesh_ready":["RÉSEAU MAILLÉ ÉTABLI", "Réseau ad hoc formé en 42 secondes", "FORMATION DU RÉSEAU"],
-		"link_degraded":["LIAISON PRINCIPALE DÉGRADÉE", "Vue locale maintenue • liaisons alternatives actives", "DÉGRADATION DES COMMS"],
-		"indoor_tracking":["GNSS PERDU — RAVEN 4", "Estimation UWB active • fiabilité 6,8 m", "LOCALISATION INTÉRIEURE"],
-		"casualty_alert":["HOMME À TERRE — RAVEN 4", "Alerte prioritaire reçue • fiabilité en amélioration", "ALERTE PRIORITAIRE"],
-		"extraction":["ÉVACUATION AFFECTÉE", "Itinéraire partagé localement • équipe informée", "ÉVACUATION DU BLESSÉ"],
-		"sync_restored":["LIAISON RÉTABLIE", "Journal synchronisé • aucun événement perdu", "REPRISE ET SYNCHRONISATION"]
+		"title":"MAX TABLET", "subtitle":"ROUTAGE RÉSEAU RÉSILIENT // EXERCICE ORION",
+		"map_title":"TOPOLOGIE RÉSEAU / CARTE TACTIQUE", "nodes":"NŒUDS RÉSEAU", "online":"%02d EN LIGNE",
+		"route_status":"ÉTAT DE L’ITINÉRAIRE", "reset":"RÉINITIALISER", "previous":"‹ PRÉCÉDENT", "next":"ÉVÉNEMENT SUIVANT  ›",
+		"simulated":"● EXERCICE • DONNÉES SIMULÉES", "node_type":"TYPE DE NŒUD", "bearers":"LIAISONS", "battery":"BATTERIE",
+		"updated":"ACTUALISÉ", "seconds":"s", "command":"COMMANDEMENT", "relay":"RELAIS", "vehicle":"VÉHICULE", "dismounted":"ÉQUIPE À PIED",
+		"active":"ACTIF", "offline":"HORS LIGNE", "constrained":"CONTRAINT", "select_destination":"SÉLECTIONNER LA DESTINATION",
+		"select_detail":"Source %s sélectionnée • toucher un autre nœud", "no_route":"AUCUN ITINÉRAIRE", "hops":"SAUTS", "quality":"Q",
+		"summary_ready":"NŒUDS 05  •  LIENS 07  •  ROUTAGE AUTO  •  FILE 00",
+		"summary_degraded":"LIEN DÉGRADÉ  •  DÉROUTAGE AUTO ACTIF  •  FILE 03",
+		"summary_offline":"RELAY-2 HORS LIGNE  •  ITINÉRAIRE BIS ACTIF  •  FILE 03",
+		"summary_constrained":"ITINÉRAIRE CONTRAINT  •  STOCKAGE-RELAIS PRÊT  •  FILE 07",
+		"summary_restored":"LIAISON RÉTABLIE  •  ITINÉRAIRE OPTIMISÉ  •  FILE 00",
+		"nodes_discovered":["RÉSEAU DÉCOUVERT", "5 nœuds fictifs détectés • toucher la source puis la destination", "DÉCOUVERTE DES NŒUDS"],
+		"route_computed":["ITINÉRAIRE CALCULÉ", "HQ-7 vers TEAM-ALPHA • meilleur chemin disponible", "SÉLECTION D’ITINÉRAIRE"],
+		"link_degraded":["LIEN DÉGRADÉ", "Perte de qualité détectée • itinéraire recalculé automatiquement", "DÉROUTAGE AUTOMATIQUE"],
+		"relay_offline":["RELAY-2 HORS LIGNE", "Trafic transféré vers HF et relais véhicule • service maintenu", "PERTE D’UN NŒUD"],
+		"route_constrained":["ITINÉRAIRE CONTRAINT", "Liaison UHF directe sélectionnée • qualité réduite", "RÉSEAU CONTRAINT"],
+		"store_forward":["STOCKAGE-RELAIS PRÊT", "Messages stockés localement en attente d’un meilleur chemin", "FONCTIONNEMENT DÉCONNECTÉ"],
+		"route_restored":["ITINÉRAIRE PRINCIPAL RÉTABLI", "Meilleur chemin sélectionné • file synchronisée", "REPRISE ET SYNCHRONISATION"]
 	}
 }
 
@@ -88,7 +86,7 @@ func _ready() -> void:
 	_apply_layout_style()
 	get_viewport().connect("size_changed", self, "_on_viewport_size_changed")
 	_apply_responsive_layout(OS.get_window_size())
-	map.connect("person_selected", self, "_on_person_selected")
+	map.connect("node_selected", self, "_on_node_selected")
 	language_button.connect("pressed", self, "_toggle_language")
 	next_button.connect("pressed", self, "_next")
 	previous_button.connect("pressed", self, "_previous")
@@ -108,9 +106,6 @@ func _apply_responsive_layout(window_size: Vector2) -> void:
 	if window_size == last_window_size:
 		return
 	last_window_size = window_size
-	# The project preserves its 1920-wide logical canvas when the browser or
-	# native window narrows. Compensate so type and controls retain a useful
-	# physical size instead of shrinking with that canvas.
 	responsive_scale = max(1.0, 1920.0 / max(window_size.x, 1.0))
 	var portrait := window_size.y > window_size.x
 	var narrow := window_size.x < 900.0
@@ -135,7 +130,6 @@ func _apply_responsive_layout(window_size: Vector2) -> void:
 	reset_button.rect_min_size = Vector2(_scaled(112 if narrow else 150), _scaled(64 if compact else 72))
 	previous_button.rect_min_size = Vector2(_scaled(145 if narrow else 180), _scaled(64 if compact else 72))
 	next_button.rect_min_size = Vector2(_scaled(195 if narrow else 250), _scaled(64 if compact else 72))
-	$Layout/BottomBar/ScenarioLabel.rect_min_size.x = _scaled(300)
 	$Layout/ContentMargin.add_constant_override("margin_left", _scaled(14 if compact else 26))
 	$Layout/ContentMargin.add_constant_override("margin_right", _scaled(14 if compact else 26))
 	$Layout/ContentMargin.add_constant_override("margin_top", _scaled(10 if compact else 18))
@@ -148,7 +142,7 @@ func _apply_responsive_layout(window_size: Vector2) -> void:
 	$Layout/ContentMargin/Content/MapColumn/MapHeader/MapMode.visible = not narrow
 	for button in [language_button, next_button, previous_button, reset_button]:
 		button.add_font_override("font", _font(_scaled(14 if narrow else 16 if compact else 18), true))
-	_refresh_team()
+	_refresh_nodes()
 	map.set_ui_scale(responsive_scale)
 
 func _apply_responsive_typography(compact: bool) -> void:
@@ -162,14 +156,11 @@ func _apply_responsive_typography(compact: bool) -> void:
 	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedName.add_font_override("font", _font(_scaled(23 if compact else 28), true))
 	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedRole.add_font_override("font", _font(_scaled(15 if compact else 17), true))
 	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedMetrics.add_font_override("font", _font(_scaled(15 if compact else 18), false))
-	$Layout/BottomBar/ScenarioLabel.add_font_override("font", _font(_scaled(16 if compact else 18), true))
-	$Layout/BottomBar/SimulationBadge.add_font_override("font", _font(_scaled(14 if compact else 16), true))
 
 func _scaled(value: int) -> int:
 	return int(round(float(value) * responsive_scale))
 
 func _apply_demo_overrides() -> void:
-	# Optional deterministic state for review captures and automated visual checks.
 	var requested_profile := OS.get_environment("TACTICAL_DEMO_PROFILE")
 	if requested_profile == "uk" or requested_profile == "fr":
 		model.profile = requested_profile
@@ -179,70 +170,48 @@ func _apply_demo_overrides() -> void:
 		model.selected_id = model.BEATS[model.beat].selected
 
 func _build_fonts() -> void:
-	regular = DynamicFont.new()
-	regular.font_data = load("res://fonts/DejaVuSans.ttf")
-	regular.size = 23
-	bold = DynamicFont.new()
-	bold.font_data = load("res://fonts/DejaVuSans-Bold.ttf")
-	bold.size = 23
+	regular = _font(23, false)
+	bold = _font(23, true)
 	add_font_override("font", regular)
 
 func _apply_layout_style() -> void:
-	_set_margins(top_bar, 28, 20)
-	_set_margins($Layout/BottomBar, 28, 20)
-	$Layout/TopBar/Brand/Title.add_font_override("font", _font(31, true))
 	$Layout/TopBar/Brand/Title.add_color_override("font_color", INK)
-	$Layout/TopBar/Brand/Subtitle.add_font_override("font", _font(17, true))
 	$Layout/TopBar/Brand/Subtitle.add_color_override("font_color", GREEN)
-	$Layout/TopBar/BearerSummary.add_font_override("font", _font(18, true))
 	$Layout/TopBar/BearerSummary.add_color_override("font_color", GREEN)
-	$Layout/TopBar/Clock.add_font_override("font", _font(22, true))
 	$Layout/TopBar/Clock.add_color_override("font_color", INK)
-	$Layout/ContentMargin/Content/MapColumn/MapHeader/MapTitle.add_font_override("font", _font(19, true))
 	$Layout/ContentMargin/Content/MapColumn/MapHeader/MapTitle.add_color_override("font_color", INK)
-	$Layout/ContentMargin/Content/MapColumn/MapHeader/MapMode.add_font_override("font", _font(17, true))
 	$Layout/ContentMargin/Content/MapColumn/MapHeader/MapMode.add_color_override("font_color", CYAN)
 	for card in [incident_card, selected_card]:
 		card.add_stylebox_override("panel", _box(PANEL_ALT, Color("234b43"), 10))
-		_set_margins(card, 18, 16)
-	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentLabel.add_font_override("font", _font(15, true))
 	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentLabel.add_color_override("font_color", MUTED)
-	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentState.add_font_override("font", _font(27, true))
-	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentDetail.add_font_override("font", _font(17, false))
 	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentDetail.add_color_override("font_color", MUTED)
-	$Layout/ContentMargin/Content/SidePanel/TeamHeader/TeamTitle.add_font_override("font", _font(19, true))
-	$Layout/ContentMargin/Content/SidePanel/TeamHeader/TeamCount.add_font_override("font", _font(16, true))
 	$Layout/ContentMargin/Content/SidePanel/TeamHeader/TeamCount.add_color_override("font_color", GREEN)
-	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedName.add_font_override("font", _font(28, true))
-	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedRole.add_font_override("font", _font(17, true))
 	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedRole.add_color_override("font_color", GREEN)
-	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedMetrics.add_font_override("font", _font(18, false))
 	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedMetrics.add_color_override("font_color", MUTED)
-	$Layout/BottomBar/ScenarioLabel.add_font_override("font", _font(18, true))
 	$Layout/BottomBar/ScenarioLabel.add_color_override("font_color", MUTED)
-	$Layout/BottomBar/SimulationBadge.add_font_override("font", _font(16, true))
 	$Layout/BottomBar/SimulationBadge.add_color_override("font_color", CYAN)
-	for button in [language_button, next_button, previous_button, reset_button]: _style_button(button)
+	for button in [language_button, next_button, previous_button, reset_button]:
+		_style_button(button)
 	next_button.add_stylebox_override("normal", _box(GREEN, GREEN, 8))
 	next_button.add_color_override("font_color", BG)
 
 func _refresh() -> void:
 	var t: Dictionary = TEXT[_language()]
-	var beat: Dictionary = model.current()
-	var story: Array = t[beat.key]
+	var story: Array = t[model.current().key]
+	var current_route: Dictionary = model.route()
 	$Layout/TopBar/Brand/Title.text = t.title
 	$Layout/TopBar/Brand/Subtitle.text = t.subtitle
-	$Layout/TopBar/Language.text = "FR · FR" if model.profile == "uk" else "UK · EN"
-	$Layout/TopBar/BearerSummary.text = _bearer_summary()
+	language_button.text = "FR · FR" if model.profile == "uk" else "UK · EN"
+	$Layout/TopBar/BearerSummary.text = _network_summary()
 	$Layout/TopBar/BearerSummary.add_color_override("font_color", AMBER if model.beat >= 2 and model.beat < 6 else GREEN)
 	$Layout/ContentMargin/Content/MapColumn/MapHeader/MapTitle.text = t.map_title
-	$Layout/ContentMargin/Content/MapColumn/MapHeader/MapMode.text = _map_mode()
-	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentLabel.text = t.incident
-	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentState.text = story[0]
-	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentState.add_color_override("font_color", RED if model.beat == 4 else AMBER if model.beat >= 2 and model.beat < 6 else INK)
-	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentDetail.text = story[1]
-	$Layout/ContentMargin/Content/SidePanel/TeamHeader/TeamTitle.text = t.team
-	$Layout/ContentMargin/Content/SidePanel/TeamHeader/TeamCount.text = t.online
+	$Layout/ContentMargin/Content/MapColumn/MapHeader/MapMode.text = _route_summary(current_route)
+	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentLabel.text = t.route_status
+	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentState.text = t.select_destination if model.awaiting_destination else story[0]
+	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentState.add_color_override("font_color", RED if model.beat == 3 else AMBER if model.beat >= 2 and model.beat < 6 else INK)
+	$Layout/ContentMargin/Content/SidePanel/IncidentCard/IncidentDetail.text = t.select_detail % model.node(model.route_source).call if model.awaiting_destination else story[1]
+	$Layout/ContentMargin/Content/SidePanel/TeamHeader/TeamTitle.text = t.nodes
+	$Layout/ContentMargin/Content/SidePanel/TeamHeader/TeamCount.text = t.online % _online_count()
 	$Layout/BottomBar/ScenarioLabel.text = "%02d / %02d  •  %s" % [model.beat + 1, model.BEATS.size(), story[2]]
 	$Layout/BottomBar/SimulationBadge.text = t.simulated
 	reset_button.text = t.reset
@@ -250,48 +219,59 @@ func _refresh() -> void:
 	next_button.text = t.next
 	previous_button.disabled = model.beat == 0
 	next_button.disabled = model.beat == model.BEATS.size() - 1
-	_refresh_team()
+	_refresh_nodes()
 	_refresh_selected()
-	map.configure(model.all_people(), model.selected_id, model.beat, model.profile)
+	map.configure(model.all_nodes(), model.all_links(), current_route, model.selected_id, model.route_source, model.route_destination, model.profile)
 
-func _refresh_team() -> void:
+func _refresh_nodes() -> void:
+	if not is_instance_valid(team_list) or model == null:
+		return
 	var t: Dictionary = TEXT[_language()]
-	for child in team_list.get_children(): child.queue_free()
-	for person in model.all_people():
+	for child in team_list.get_children():
+		child.queue_free()
+	for item in model.all_nodes():
 		var button := Button.new()
 		button.rect_min_size = Vector2(0, _scaled(70))
 		button.align = Button.ALIGN_LEFT
-		var status_key: String = "row_%s" % person.status
-		button.text = "  ●  %s     %s     %d%%" % [person.call, t[status_key], person.battery]
+		button.text = "  ●  %s     %s     %d%%" % [item.call, t[item.status], item.battery]
 		button.add_font_override("font", _font(_scaled(18), true))
-		var color: Color = RED if person.status == "man_down" else AMBER if person.status == "evacuation" else GREEN
-		button.add_color_override("font_color", color if person.id == model.selected_id else INK)
-		button.add_stylebox_override("normal", _box(PANEL_ALT if person.id == model.selected_id else PANEL, color if person.id == model.selected_id else Color("1d3934"), 7))
-		button.connect("pressed", self, "_on_person_selected", [person.id])
+		var color: Color = RED if item.status == "offline" else AMBER if item.status == "constrained" else GREEN
+		button.add_color_override("font_color", color if item.id == model.selected_id else INK)
+		button.add_stylebox_override("normal", _box(PANEL_ALT if item.id == model.selected_id else PANEL, color if item.id == model.selected_id else Color("1d3934"), 7))
+		button.connect("pressed", self, "_on_node_selected", [item.id])
 		team_list.add_child(button)
 
 func _refresh_selected() -> void:
 	var t: Dictionary = TEXT[_language()]
-	var p: Dictionary = model.person_state(model.selected_id)
-	var status_key: String = p.status
-	var status: String = t[status_key]
-	var decimal: String = ("%.1f" % p.confidence).replace(".", ",") if _language() == "fr" else "%.1f" % p.confidence
-	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedName.text = p.call
-	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedRole.text = "%s  •  %s" % [t[p.role_key], status]
-	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedRole.add_color_override("font_color", RED if p.status == "man_down" else AMBER if p.status == "evacuation" else GREEN)
-	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedMetrics.text = "%s   %s m %s\n%s     %s\n%s    %d%%  •  %d %s\n%s    %d %s  •  %s %s" % [t.position, decimal, t.confidence, t.bearer, p.bearer, t.battery, p.battery, 12 + int(p.battery / 16), t.hours, t.updated, p.age_seconds, t.seconds, t.source, t[p.source.to_lower()]]
+	var item: Dictionary = model.node_state(model.selected_id)
+	var color: Color = RED if item.status == "offline" else AMBER if item.status == "constrained" else GREEN
+	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedName.text = item.call
+	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedRole.text = "%s  •  %s" % [t[item.role_key], t[item.status]]
+	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedRole.add_color_override("font_color", color)
+	$Layout/ContentMargin/Content/SidePanel/SelectedCard/SelectedMetrics.text = "%s   %s\n%s     %s\n%s    %d%%\n%s    %d %s" % [t.node_type, t[item.role_key], t.bearers, PoolStringArray(item.bearers).join(" + "), t.battery, item.battery, t.updated, item.age_seconds, t.seconds]
 
-func _bearer_summary() -> String:
+func _network_summary() -> String:
 	var t: Dictionary = TEXT[_language()]
-	if model.beat >= 2 and model.beat < 6: return t.bearer_lost
-	if model.beat == 6: return t.bearer_restored
-	return t.bearer_ready
+	if model.beat == 2: return t.summary_degraded
+	if model.beat == 3: return t.summary_offline
+	if model.beat >= 4 and model.beat <= 5: return t.summary_constrained
+	if model.beat == 6: return t.summary_restored
+	return t.summary_ready
 
-func _map_mode() -> String:
+func _route_summary(current_route: Dictionary) -> String:
 	var t: Dictionary = TEXT[_language()]
-	if model.beat == 3: return t.fusion_low
-	if model.beat >= 4 and model.beat < 6: return t.fusion_improving
-	return t.fusion_normal
+	if not current_route.available:
+		return t.no_route
+	var source_call: String = model.node(current_route.path[0]).call
+	var destination_call: String = model.node(current_route.path[current_route.path.size() - 1]).call
+	return "%s → %s  •  %d %s  •  %d ms  •  %s %d%%" % [source_call, destination_call, current_route.path.size() - 1, t.hops, current_route.latency, t.quality, current_route.quality]
+
+func _online_count() -> int:
+	var count := 0
+	for item in model.all_nodes():
+		if item.status != "offline":
+			count += 1
+	return count
 
 func _toggle_language() -> void:
 	model.profile = "fr" if model.profile == "uk" else "uk"
@@ -312,16 +292,13 @@ func _reset() -> void:
 	model.reset()
 	_refresh()
 
-func _on_person_selected(person_id: String) -> void:
-	model.selected_id = person_id
+func _on_node_selected(node_id: String) -> void:
+	model.select_route_node(node_id)
 	_refresh()
 
 func _tick() -> void:
 	clock_seconds += 1
-	var hours := int(clock_seconds / 3600) % 24
-	var minutes := int(clock_seconds / 60) % 60
-	var seconds := clock_seconds % 60
-	$Layout/TopBar/Clock.text = "%02d:%02d:%02dZ" % [hours, minutes, seconds]
+	$Layout/TopBar/Clock.text = "%02d:%02d:%02dZ" % [int(clock_seconds / 3600) % 24, int(clock_seconds / 60) % 60, clock_seconds % 60]
 
 func _font(size: int, is_bold: bool) -> DynamicFont:
 	var result := DynamicFont.new()
@@ -350,13 +327,9 @@ func _style_button(button: Button) -> void:
 	button.add_stylebox_override("disabled", _box(Color("081613"), Color("162a26"), 8))
 	button.add_color_override("font_color_disabled", Color("435751"))
 
-func _set_margins(control: Control, horizontal: int, vertical: int) -> void:
-	control.add_constant_override("separation", 20)
-	# Container padding is supplied by each child style; retain a consistent edge gap.
-	control.rect_clip_content = false
-
 func _unhandled_input(event: InputEvent) -> void:
-	if not event is InputEventKey or not event.pressed or event.echo: return
+	if not event is InputEventKey or not event.pressed or event.echo:
+		return
 	match event.scancode:
 		KEY_RIGHT, KEY_N: _next()
 		KEY_LEFT, KEY_P: _previous()
