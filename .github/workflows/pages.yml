@@ -33,32 +33,44 @@ jobs:
       - name: Configure Godot paths
         shell: bash
         run: |
-          echo "XDG_DATA_HOME=${RUNNER_TEMP}/xdg-data" >> "$GITHUB_ENV"
+          echo "GODOT_CACHE_ROOT=${RUNNER_TOOL_CACHE}/godot-ci/${GODOT_RELEASE}" >> "$GITHUB_ENV"
+          echo "XDG_DATA_HOME=${RUNNER_TOOL_CACHE}/godot-ci/${GODOT_RELEASE}/xdg-data" >> "$GITHUB_ENV"
           echo "XDG_CONFIG_HOME=${RUNNER_TEMP}/xdg-config" >> "$GITHUB_ENV"
           echo "XDG_CACHE_HOME=${RUNNER_TEMP}/xdg-cache" >> "$GITHUB_ENV"
 
-      - name: Install pinned Godot 3 exporter
+      - name: Prepare pinned Godot 3 exporter
         shell: bash
         run: |
           set -euo pipefail
+          godot="$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64"
+          marker="$GODOT_CACHE_ROOT/checksums"
+          expected="${GODOT_HEADLESS_SHA512} ${GODOT_TEMPLATES_SHA512}"
+          if test -x "$godot" && test -f "$marker" && test "$(cat "$marker")" = "$expected"; then
+            echo "Using cached Godot ${GODOT_RELEASE} exporter"
+            exit 0
+          fi
+
           editor="Godot_v${GODOT_RELEASE}_linux_headless.64.zip"
           templates="Godot_v${GODOT_RELEASE}_export_templates.tpz"
           base_url="https://github.com/godotengine/godot/releases/download/${GODOT_RELEASE}"
-          curl --fail --location --retry 3 --output "$editor" "$base_url/$editor"
-          curl --fail --location --retry 3 --output "$templates" "$base_url/$templates"
-          echo "$GODOT_HEADLESS_SHA512  $editor" | sha512sum --check --strict
-          echo "$GODOT_TEMPLATES_SHA512  $templates" | sha512sum --check --strict
-          unzip -q "$editor" -d "${RUNNER_TEMP}/godot"
+          download_dir="${RUNNER_TEMP}/godot-download"
+          mkdir -p "$download_dir" "$GODOT_CACHE_ROOT"
+          curl --fail --location --retry 3 --output "$download_dir/$editor" "$base_url/$editor"
+          curl --fail --location --retry 3 --output "$download_dir/$templates" "$base_url/$templates"
+          echo "$GODOT_HEADLESS_SHA512  $download_dir/$editor" | sha512sum --check --strict
+          echo "$GODOT_TEMPLATES_SHA512  $download_dir/$templates" | sha512sum --check --strict
+          unzip -oq "$download_dir/$editor" -d "$GODOT_CACHE_ROOT"
           mkdir -p "$XDG_DATA_HOME/godot/templates/${GODOT_VERSION}.stable"
-          unzip -q "$templates" -d "${RUNNER_TEMP}/templates"
+          unzip -oq "$download_dir/$templates" -d "${RUNNER_TEMP}/templates"
           cp -R "${RUNNER_TEMP}/templates/templates/." "$XDG_DATA_HOME/godot/templates/${GODOT_VERSION}.stable/"
+          printf '%s' "$expected" > "$marker"
 
       - name: Export HTML5 site
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p dist
-          "${RUNNER_TEMP}/godot/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path . --export "Web" dist/index.html
           test -s dist/index.html
           test -s dist/index.wasm
