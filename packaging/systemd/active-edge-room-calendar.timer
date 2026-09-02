@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh the Active-Edge room calendar every eight seconds
+
+[Timer]
+OnBootSec=5s
+OnUnitActiveSec=8s
+AccuracySec=1s
+Unit=active-edge-room-calendar.service
+
+[Install]
+WantedBy=timers.target

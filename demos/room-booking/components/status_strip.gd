@@ -71,9 +71,9 @@ func _ready() -> void:
 	corridor_ribbon.mouse_filter = MOUSE_FILTER_IGNORE
 	column.add_child(corridor_ribbon)
 
-func configure(room: String, floor_name: String, state: String, clock: String, offline: bool) -> void:
+func configure(room: String, floor_name: String, state: String, clock: String, sync_text: String, offline: bool) -> void:
 	room_label.text = room
-	detail_label.text = floor_name + ("  ·  Offline · cached agenda" if offline else "  ·  Synced just now")
+	detail_label.text = floor_name + "  ·  " + sync_text
 	clock_label.text = clock
 	state_label.text = state.to_upper()
 	var colour := LIME

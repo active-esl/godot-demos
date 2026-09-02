@@ -1,0 +1,36 @@
+{
+  "items": [
+    {
+      "id": "fixture-design-review",
+      "status": "confirmed",
+      "summary": "Product design review",
+      "description": "Host: Maya Chen",
+      "start": {"dateTime": "2026-09-02T09:00:00+01:00"},
+      "end": {"dateTime": "2026-09-02T10:00:00+01:00"}
+    },
+    {
+      "id": "fixture-onboarding",
+      "status": "confirmed",
+      "summary": "Customer onboarding",
+      "description": "Host: Daniel Brooks\nChecked-in: yes",
+      "start": {"dateTime": "2026-09-02T10:30:00+01:00"},
+      "end": {"dateTime": "2026-09-02T11:30:00+01:00"}
+    },
+    {
+      "id": "fixture-aurora",
+      "status": "confirmed",
+      "summary": "Project Aurora",
+      "description": "Host: Nina Patel\nChecked-in: yes",
+      "start": {"dateTime": "2026-09-02T13:00:00+01:00"},
+      "end": {"dateTime": "2026-09-02T13:45:00+01:00"}
+    },
+    {
+      "id": "fixture-operations",
+      "status": "confirmed",
+      "summary": "Operations weekly",
+      "description": "Host: Sam Williams\nChecked-in: yes",
+      "start": {"dateTime": "2026-09-02T15:00:00+01:00"},
+      "end": {"dateTime": "2026-09-02T16:00:00+01:00"}
+    }
+  ]
+}

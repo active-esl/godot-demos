@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -67,6 +69,29 @@ jobs:
           cp -R "${RUNNER_TEMP}/templates/templates/." "$XDG_DATA_HOME/godot/templates/${GODOT_VERSION}.stable/"
           printf '%s' "$expected" > "$marker"
 
+      - name: Prepare room calendar snapshot
+        shell: bash
+        env:
+          AESL_ROOM_DISPLAY_GCAL_SA_JSON: ${{ secrets.AESL_ROOM_DISPLAY_GCAL_SA_JSON }}
+        run: |
+          set -euo pipefail
+          if test -n "${AESL_ROOM_DISPLAY_GCAL_SA_JSON}"; then
+            venv="${RUNNER_TOOL_CACHE}/aesl-gcal-export-v1"
+            if ! test -x "${venv}/bin/python"; then
+              python3.12 -m venv "${venv}"
+              "${venv}/bin/pip" install -r scripts/requirements-gcal.txt
+            fi
+            "${venv}/bin/python" scripts/gcal_export.py
+          else
+            python3.12 scripts/gcal_export.py \
+              --fixture scripts/fixtures/google_events.json \
+              --day 2026-09-02
+          fi
+
+      - name: Test room calendar adapter
+        shell: bash
+        run: python3.12 -m unittest scripts/test_gcal_export.py
+
       - name: Export HTML5 site
         shell: bash
         run: |
@@ -89,12 +114,23 @@ jobs:
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/room-booking \
             --export "Web" "$GITHUB_WORKSPACE/dist/room-booking/${booking_base}.html"
+          mkdir -p dist/embedded/room-booking
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/room-booking \
+            --export-pack "Embedded PCK" \
+            "$GITHUB_WORKSPACE/dist/embedded/room-booking/active-edge-room-booking.pck"
+          timeout 30s "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --main-pack "$GITHUB_WORKSPACE/dist/embedded/room-booking/active-edge-room-booking.pck" \
+            --no-window -s scripts/model_smoke.gd \
+            | tee "${RUNNER_TEMP}/room-booking-pack-smoke.log"
+          grep -q "ROOM_BOOKING_MODEL_SMOKE_OK" "${RUNNER_TEMP}/room-booking-pack-smoke.log"
           mv "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.html" \
             dist/elanco-manufacturing-digital-twin/index.html
           mv "dist/aero-pressure-digital-twin/${aero_base}.html" \
             dist/aero-pressure-digital-twin/index.html
           mv "dist/room-booking/${booking_base}.html" \
             dist/room-booking/index.html
+          cp demos/room-booking/data/calendar_day.json dist/room-booking/calendar_day.json
           test -s dist/index.html
           test -s dist/elanco-manufacturing-digital-twin/index.html
           test -s "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.wasm"
@@ -105,6 +141,8 @@ jobs:
           test -s dist/room-booking/index.html
           test -s "dist/room-booking/${booking_base}.wasm"
           test -s "dist/room-booking/${booking_base}.pck"
+          test -s dist/room-booking/calendar_day.json
+          test -s dist/embedded/room-booking/active-edge-room-booking.pck
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
