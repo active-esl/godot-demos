@@ -102,6 +102,12 @@ are checksum-verified and cached on self-hosted runners. As more demos are added
 CI should build each affected demo independently and assemble their outputs into
 one Pages artefact rather than coupling all projects into a single Godot export.
 
+External product-twin pages consume the stable assets under
+`/godot-demos/embed/manufacturing/` and `/godot-demos/embed/max-tablet/`.
+Generated content-addressed export names are internal to each Pages deployment
+and must not be pinned by another site because the next deployment replaces
+them. CI asserts that every stable embed endpoint contains its JS, WASM and PCK.
+
 The room-booking export refreshes its read-only, privacy-minimised Google
 Calendar snapshot every five minutes. Calendar credentials remain in GitHub
 Actions and are never included in the downloadable web application.
