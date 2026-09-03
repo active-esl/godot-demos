@@ -226,8 +226,8 @@ func _resume_attract() -> void:
 	status.text = "ATTRACT MODE · TOUCH TO PLAY"
 
 func _refresh_frame() -> void:
-	var image := engine.render_frame()
+	var image = engine.render_frame()
 	texture.create_from_image(image, Texture.FLAG_FILTER)
 	screen.texture = texture
-	var snap := engine.snapshot()
+	var snap = engine.snapshot()
 	telemetry.text = "FRAMEBUFFER     256 × 160 @ 20 Hz\nPOSITION        %04.1f / %04.1f\nHEADING         %03d°\nINPUT           TOUCH + USB HID" % [snap.x, snap.y, int(rad2deg(snap.heading)) % 360]

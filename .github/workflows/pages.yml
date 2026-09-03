@@ -141,6 +141,10 @@ jobs:
             --path demos/freedoom-poe --no-window -s scripts/model_smoke.gd \
             | tee "${RUNNER_TEMP}/freedoom-poe-smoke.log"
           grep -q "FREEDOOM_POE_MODEL_SMOKE_OK" "${RUNNER_TEMP}/freedoom-poe-smoke.log"
+          timeout 30s "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/freedoom-poe --no-window -s scripts/ui_smoke.gd \
+            | tee "${RUNNER_TEMP}/freedoom-poe-ui-smoke.log"
+          grep -q "FREEDOOM_POE_UI_SMOKE_OK" "${RUNNER_TEMP}/freedoom-poe-ui-smoke.log"
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/touch-display-calibration \
             --export "Web" "$GITHUB_WORKSPACE/dist/touch-display-calibration/${calibration_base}.html"
