@@ -125,7 +125,6 @@ func _build_ui() -> void:
 	screen = TextureRect.new()
 	screen.expand = true
 	screen.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	screen.texture_flags = Texture.FLAG_FILTER
 	screen.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	viewport_panel.add_child(screen)
 	var side := VBoxContainer.new()
@@ -226,8 +225,8 @@ func _resume_attract() -> void:
 	status.text = "ATTRACT MODE · TOUCH TO PLAY"
 
 func _refresh_frame() -> void:
-	var image := engine.render_frame()
+	var image = engine.render_frame()
 	texture.create_from_image(image, Texture.FLAG_FILTER)
 	screen.texture = texture
-	var snap := engine.snapshot()
+	var snap = engine.snapshot()
 	telemetry.text = "FRAMEBUFFER     256 × 160 @ 20 Hz\nPOSITION        %04.1f / %04.1f\nHEADING         %03d°\nINPUT           TOUCH + USB HID" % [snap.x, snap.y, int(rad2deg(snap.heading)) % 360]

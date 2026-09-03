@@ -33,6 +33,7 @@ The production integration seam is intentionally explicit:
 
 ```sh
 godot3 --path demos/freedoom-poe --no-window -s scripts/model_smoke.gd
+godot3 --path demos/freedoom-poe --no-window -s scripts/ui_smoke.gd
 ```
 
 ## Licensing
