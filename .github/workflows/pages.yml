@@ -167,6 +167,22 @@ jobs:
             dist/room-booking/index.html
           mv "dist/resilient-tactical-picture/${tactical_base}.html" \
             dist/resilient-tactical-picture/index.html
+          # Product-twin sites consume these stable embed endpoints. The
+          # content-addressed standalone names change on every Pages deploy,
+          # so external consumers must never pin those generated names.
+          mkdir -p dist/embed/manufacturing dist/embed/max-tablet
+          cp "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.js" \
+            dist/embed/manufacturing/godot.js
+          cp "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.wasm" \
+            dist/embed/manufacturing/godot.wasm
+          cp "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.pck" \
+            dist/embed/manufacturing/godot.pck
+          cp "dist/resilient-tactical-picture/${tactical_base}.js" \
+            dist/embed/max-tablet/godot.js
+          cp "dist/resilient-tactical-picture/${tactical_base}.wasm" \
+            dist/embed/max-tablet/godot.wasm
+          cp "dist/resilient-tactical-picture/${tactical_base}.pck" \
+            dist/embed/max-tablet/godot.pck
           cp demos/room-booking/data/calendar_day.json dist/room-booking/calendar_day.json
           test -s dist/index.html
           test -s dist/elanco-manufacturing-digital-twin/index.html
@@ -184,6 +200,11 @@ jobs:
           test -s "dist/resilient-tactical-picture/${tactical_base}.wasm"
           test -s "dist/resilient-tactical-picture/${tactical_base}.pck"
           test -s dist/embedded/resilient-tactical-picture/active-edge-max-tablet.pck
+          for demo in manufacturing max-tablet; do
+            test -s "dist/embed/${demo}/godot.js"
+            test -s "dist/embed/${demo}/godot.wasm"
+            test -s "dist/embed/${demo}/godot.pck"
+          done
           mkdir -p dist/embedded/touch-display-calibration
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/touch-display-calibration \
