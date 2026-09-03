@@ -125,7 +125,6 @@ func _build_ui() -> void:
 	screen = TextureRect.new()
 	screen.expand = true
 	screen.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	screen.texture_flags = Texture.FLAG_FILTER
 	screen.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	viewport_panel.add_child(screen)
 	var side := VBoxContainer.new()
