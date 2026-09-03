@@ -48,6 +48,8 @@ var delta_value
 var load_value
 var status_value
 var sensor_buttons = []
+var view_buttons = []
+var airflow_button
 
 var sensor_names = [
 	"FRONT WING", "NOSE", "FRONT FLOOR", "COCKPIT",
@@ -203,9 +205,9 @@ func build_ui():
 	slider.rect_min_size.y = 54
 	slider.connect("value_changed", self, "speed_changed")
 	column.add_child(slider)
-	var toggle = action_button("PAUSE AIRFLOW")
-	toggle.connect("pressed", self, "toggle_flow", [toggle])
-	column.add_child(toggle)
+	airflow_button = action_button("PAUSE AIRFLOW")
+	airflow_button.connect("button_down", self, "toggle_flow", [airflow_button])
+	column.add_child(airflow_button)
 	column.add_child(text("PRESSURE ZONES", 14, MUTED, true))
 	var grid = GridContainer.new()
 	grid.columns = 2
@@ -229,8 +231,11 @@ func build_ui():
 	# views along +X, while side views across the Z axis.
 	for item in [["SIDE", -1.57, -0.18], ["FRONT", -3.14159, -0.12], ["TOP", -0.62, -1.05]]:
 		var b = action_button(item[0])
-		b.connect("pressed", self, "set_view", [item[1], item[2]])
+		# Act on contact rather than release so browser and FRT touches cannot
+		# cancel a control after a small amount of finger movement.
+		b.connect("button_down", self, "set_view", [item[1], item[2]])
 		views.add_child(b)
+		view_buttons.append(b)
 
 func build_sensor_readouts(root):
 	for i in range(sensor_names.size()):
@@ -519,17 +524,19 @@ func material(colour, roughness = 0.4, transparent = false):
 	return mat
 
 func simplify_model_materials(node):
-	# The CC0 glTF carries desktop PBR materials. Preserve its five colour groups
+	# The CC0 glTF carries desktop PBR materials. Preserve their authored colours
 	# while removing material features that exceed the target Vivante GLES2
-	# shader-input budget.
+	# shader-input budget. Assigning colours by surface index made separate car
+	# parts change colour arbitrarily and was the source of the "funky" web look.
 	if node is MeshInstance:
-		var colours = [Color("0050a5"), Color("07101f"), Color("08090b"), Color("d92f35"), Color("3c4148")]
+		var fallback_colours = [Color("0050a5"), Color("07101f"), Color("08090b"), Color("d92f35"), Color("3c4148")]
 		node.mesh = node.mesh.duplicate()
 		for surface in range(node.mesh.get_surface_count()):
+			var source = node.mesh.surface_get_material(surface)
 			var mat = SpatialMaterial.new()
-			mat.albedo_color = colours[surface % colours.size()]
-			mat.roughness = 0.72
-			mat.metallic = 0.05
+			mat.albedo_color = source.albedo_color if source is SpatialMaterial else fallback_colours[surface % fallback_colours.size()]
+			mat.roughness = 0.58
+			mat.metallic = 0.08
 			mat.flags_vertex_lighting = true
 			node.mesh.surface_set_material(surface, mat)
 	for child in node.get_children():
