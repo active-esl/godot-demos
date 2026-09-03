@@ -7,6 +7,8 @@ func _init():
 	yield(self, "idle_frame")
 
 	assert(scene.sensor_buttons.size() == 8)
+	var model = scene.car.get_node("CC0RacingCar")
+	assert(abs(model.translation.y - 0.06) < 0.001)
 	scene.sensor_buttons[3].emit_signal("button_down")
 	assert(scene.selected_sensor == 3)
 	assert(scene.distance == scene.focus_from_distance)
@@ -21,5 +23,5 @@ func _init():
 	assert(not scene.flow_enabled)
 	assert(scene.airflow_button.text == "RESUME AIRFLOW")
 
-	print("AERO_UI_SMOKE_OK controls=12 authored_material_colours=true")
+	print("AERO_UI_SMOKE_OK controls=12 authored_material_colours=true ride_height=true")
 	quit()
