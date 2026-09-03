@@ -1,0 +1,22 @@
+config_version=4
+
+[application]
+config/name="Can It Run Freedoom?"
+run/main_scene="res://Main.tscn"
+
+[display]
+window/size/width=1280
+window/size/height=800
+window/size/fullscreen=true
+window/size/borderless=true
+window/stretch/mode="2d"
+window/stretch/aspect="expand"
+
+[input_devices]
+pointing/emulate_touch_from_mouse=true
+
+[rendering]
+quality/driver/driver_name="GLES2"
+2d/snapping/use_gpu_pixel_snap=true
+quality/2d/use_pixel_snap=true
+

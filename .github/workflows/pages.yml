@@ -108,13 +108,14 @@ jobs:
             --path demos/resilient-tactical-picture --no-window -s scripts/ui_smoke.gd \
             | tee "${RUNNER_TEMP}/resilient-tactical-ui-smoke.log"
           grep -q "RESILIENT_TACTICAL_UI_SMOKE_OK" "${RUNNER_TEMP}/resilient-tactical-ui-smoke.log"
-          mkdir -p dist/elanco-manufacturing-digital-twin dist/aero-pressure-digital-twin dist/room-booking dist/resilient-tactical-picture dist/touch-display-calibration
+          mkdir -p dist/elanco-manufacturing-digital-twin dist/aero-pressure-digital-twin dist/room-booking dist/resilient-tactical-picture dist/touch-display-calibration dist/freedoom-poe
           cp -R site/. dist/
           manufacturing_base="manufacturing-${GITHUB_SHA::12}"
           aero_base="aero-${GITHUB_SHA::12}"
           booking_base="booking-${GITHUB_SHA::12}"
           tactical_base="tactical-${GITHUB_SHA::12}"
           calibration_base="calibration-${GITHUB_SHA::12}"
+          freedoom_base="freedoom-${GITHUB_SHA::12}"
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/elanco-manufacturing-digital-twin \
             --export "Web" "$GITHUB_WORKSPACE/dist/elanco-manufacturing-digital-twin/${manufacturing_base}.html"
@@ -137,8 +138,15 @@ jobs:
             | tee "${RUNNER_TEMP}/touch-display-calibration-smoke.log"
           grep -q "TOUCH_DISPLAY_CALIBRATION_SMOKE_OK" "${RUNNER_TEMP}/touch-display-calibration-smoke.log"
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/freedoom-poe --no-window -s scripts/model_smoke.gd \
+            | tee "${RUNNER_TEMP}/freedoom-poe-smoke.log"
+          grep -q "FREEDOOM_POE_MODEL_SMOKE_OK" "${RUNNER_TEMP}/freedoom-poe-smoke.log"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/touch-display-calibration \
             --export "Web" "$GITHUB_WORKSPACE/dist/touch-display-calibration/${calibration_base}.html"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/freedoom-poe \
+            --export "Web" "$GITHUB_WORKSPACE/dist/freedoom-poe/${freedoom_base}.html"
           mkdir -p dist/embedded/room-booking
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/room-booking \
@@ -170,7 +178,7 @@ jobs:
           # Product-twin sites consume these stable embed endpoints. The
           # content-addressed standalone names change on every Pages deploy,
           # so external consumers must never pin those generated names.
-          mkdir -p dist/embed/manufacturing dist/embed/max-tablet
+          mkdir -p dist/embed/manufacturing dist/embed/max-tablet dist/embed/freedoom-poe
           cp "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.js" \
             dist/embed/manufacturing/godot.js
           cp "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.wasm" \
@@ -183,6 +191,9 @@ jobs:
             dist/embed/max-tablet/godot.wasm
           cp "dist/resilient-tactical-picture/${tactical_base}.pck" \
             dist/embed/max-tablet/godot.pck
+          cp "dist/freedoom-poe/${freedoom_base}.js" dist/embed/freedoom-poe/godot.js
+          cp "dist/freedoom-poe/${freedoom_base}.wasm" dist/embed/freedoom-poe/godot.wasm
+          cp "dist/freedoom-poe/${freedoom_base}.pck" dist/embed/freedoom-poe/godot.pck
           cp demos/room-booking/data/calendar_day.json dist/room-booking/calendar_day.json
           test -s dist/index.html
           test -s dist/elanco-manufacturing-digital-twin/index.html
@@ -200,7 +211,7 @@ jobs:
           test -s "dist/resilient-tactical-picture/${tactical_base}.wasm"
           test -s "dist/resilient-tactical-picture/${tactical_base}.pck"
           test -s dist/embedded/resilient-tactical-picture/active-edge-max-tablet.pck
-          for demo in manufacturing max-tablet; do
+          for demo in manufacturing max-tablet freedoom-poe; do
             test -s "dist/embed/${demo}/godot.js"
             test -s "dist/embed/${demo}/godot.wasm"
             test -s "dist/embed/${demo}/godot.pck"
@@ -217,10 +228,14 @@ jobs:
           grep -q "TOUCH_DISPLAY_CALIBRATION_SMOKE_OK" "${RUNNER_TEMP}/touch-display-calibration-pack-smoke.log"
           mv "dist/touch-display-calibration/${calibration_base}.html" \
             dist/touch-display-calibration/index.html
+          mv "dist/freedoom-poe/${freedoom_base}.html" dist/freedoom-poe/index.html
           test -s dist/touch-display-calibration/index.html
           test -s "dist/touch-display-calibration/${calibration_base}.wasm"
           test -s "dist/touch-display-calibration/${calibration_base}.pck"
           test -s dist/embedded/touch-display-calibration/touch-display-calibration.pck
+          test -s dist/freedoom-poe/index.html
+          test -s "dist/freedoom-poe/${freedoom_base}.wasm"
+          test -s "dist/freedoom-poe/${freedoom_base}.pck"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

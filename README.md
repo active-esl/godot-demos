@@ -15,6 +15,7 @@ independently while sharing a consistent engineering baseline.
 | [Active-Edge room booking](demos/room-booking/) | Godot 3.6 / GLES2 | Meeting-room availability, agenda, check-in, extend and walk-up booking journey | [Web demo](https://active-esl.github.io/godot-demos/room-booking/) |
 | [MAX Tablet](demos/resilient-tactical-picture/) | Godot 3.6 / GLES2 | Resilient network-node mapping, automatic route selection, degraded-path recovery and bilingual operation | [Web demo](https://active-esl.github.io/godot-demos/resilient-tactical-picture/) |
 | [Touch and display calibration lab](demos/touch-display-calibration/) | Godot 3.6 / GLES2 | Display patterns, guided five-point calibration, live multi-touch and BSP-first correction guidance | [Web demo](https://active-esl.github.io/godot-demos/touch-display-calibration/) |
+| [Can It Run Freedoom?](demos/freedoom-poe/) | Godot 3.6 / GLES2 | Touch-first software-rendering and PoE kiosk integration proof | [Web demo](https://active-esl.github.io/godot-demos/freedoom-poe/) |
 
 The Elanco-themed demonstrator uses simulated data and public themes. It is an
 unofficial concept: it is not connected to an Elanco site or production system,
@@ -93,6 +94,9 @@ godot3 --video-driver GLES2 --path demos/elanco-manufacturing-digital-twin
 5. Cache pinned toolchains and templates on self-hosted runners, then measure a
    warm run to confirm the intended speed-up.
 6. Publish web-capable demos at a stable path under the collection Pages site.
+
+Use the [product concept Live UX workflow](docs/PRODUCT_CONCEPT_WORKFLOW.md)
+when a demo will also appear inside an enclosure twin or on target hardware.
 
 ## CI and publication
 
