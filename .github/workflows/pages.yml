@@ -108,6 +108,10 @@ jobs:
             --path demos/resilient-tactical-picture --no-window -s scripts/ui_smoke.gd \
             | tee "${RUNNER_TEMP}/resilient-tactical-ui-smoke.log"
           grep -q "RESILIENT_TACTICAL_UI_SMOKE_OK" "${RUNNER_TEMP}/resilient-tactical-ui-smoke.log"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/aero-pressure-digital-twin --no-window -s scripts/ui_smoke.gd \
+            | tee "${RUNNER_TEMP}/aero-ui-smoke.log"
+          grep -q "AERO_UI_SMOKE_OK" "${RUNNER_TEMP}/aero-ui-smoke.log"
           mkdir -p dist/elanco-manufacturing-digital-twin dist/aero-pressure-digital-twin dist/room-booking dist/resilient-tactical-picture
           cp -R site/. dist/
           manufacturing_base="manufacturing-${GITHUB_SHA::12}"

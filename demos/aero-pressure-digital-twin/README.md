@@ -20,6 +20,10 @@ The generic racing-car model is by scaranto and is distributed under CC0; see
 - Adjust tunnel speed with the touch-sized slider.
 - Toggle airflow and tap pressure-zone buttons to inspect simulated readings.
 
+The web and embedded builds deliberately use the same touch-sized Godot
+`Control` buttons. Actions fire on touch-down, avoiding release cancellation
+from natural finger movement. CI exercises every control family before export.
+
 The UI uses Godot `Control` nodes. The bounded 3D visualisation loads the CC0
 glTF model and reuses airflow meshes rather than allocating geometry each frame.
 
