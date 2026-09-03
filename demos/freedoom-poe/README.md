@@ -16,8 +16,8 @@ The production integration seam is intentionally explicit:
 
 - native target: a pinned GPL Doom-compatible engine consumes a pinned
   `freedoom2.wad`, writing into the same framebuffer/input boundary;
-- web target: a browser-compatible build of the same engine/content, with the
-  same normalised touch actions;
+- web target: the pinned browser-compatible engine and Freedoom payload is now
+  published at `/freedoom-engine/`, with touch, pen, mouse and keyboard input;
 - no proprietary Doom WAD, logo, music or artwork enters this repository;
 - engine source, build recipe, exact revision, checksum and licence notices
   ship beside every binary release.
@@ -38,6 +38,7 @@ godot3 --path demos/freedoom-poe --no-window -s scripts/ui_smoke.gd
 
 ## Licensing
 
-This vertical slice contains only original MIT-licensed project code. Freedoom
-and a GPL engine are not yet vendored. Their eventual notices must remain next
-to the payload and be included in published artefacts.
+The Godot vertical slice contains only original MIT-licensed project code. The
+separate browser payload contains GPLv2 engine code and BSD-licensed Freedoom
+data. Its exact revisions, checksums, rebuild recipe and notices live under
+`third_party/freedoom-engine/` and ship beside the published payload.

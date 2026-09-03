@@ -1,0 +1,22 @@
+diff --git a/doom/main.js b/doom/main.js
+index ec80b1a..f927656 100644
+--- a/doom/main.js
++++ b/doom/main.js
+@@ -1,5 +1,5 @@
+ 'use strict';
+-var memory = new WebAssembly.Memory({ initial : 108 });
++var memory = new WebAssembly.Memory({ initial : 512 });
+ 
+ /*stdout and stderr goes here*/
+ const output = document.getElementById("output");
+diff --git a/doom/src/gamefile.rs b/doom/src/gamefile.rs
+index 836d6da..060d2ed 100644
+--- a/doom/src/gamefile.rs
++++ b/doom/src/gamefile.rs
+@@ -2,7 +2,7 @@ use std::ffi::CStr;
+ use std::os::raw::{c_char, c_int};
+ 
+ const DOOM1_WAD_FD: c_int = 42; // file descriptor for openend ./doom1.wad
+-static DOOM1_WAD: &[u8; 4196020] = include_bytes!("../doom1.wad");
++static DOOM1_WAD: &[u8] = include_bytes!("../doom1.wad");
+ static mut DOOM1_WAD_SEEKER: usize = 0;

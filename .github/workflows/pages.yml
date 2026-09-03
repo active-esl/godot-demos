@@ -110,6 +110,8 @@ jobs:
           grep -q "RESILIENT_TACTICAL_UI_SMOKE_OK" "${RUNNER_TEMP}/resilient-tactical-ui-smoke.log"
           mkdir -p dist/elanco-manufacturing-digital-twin dist/aero-pressure-digital-twin dist/room-booking dist/resilient-tactical-picture dist/touch-display-calibration dist/freedoom-poe
           cp -R site/. dist/
+          echo "84515cb0ad90e267dce597d83f14691f8f15549724a29baad052235332987254  dist/freedoom-engine/doom.wasm" \
+            | sha256sum --check --strict
           manufacturing_base="manufacturing-${GITHUB_SHA::12}"
           aero_base="aero-${GITHUB_SHA::12}"
           booking_base="booking-${GITHUB_SHA::12}"
@@ -240,6 +242,9 @@ jobs:
           test -s dist/freedoom-poe/index.html
           test -s "dist/freedoom-poe/${freedoom_base}.wasm"
           test -s "dist/freedoom-poe/${freedoom_base}.pck"
+          test -s dist/freedoom-engine/index.html
+          test -s dist/freedoom-engine/main.js
+          test -s dist/freedoom-engine/THIRD_PARTY_NOTICES.md
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
