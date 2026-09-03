@@ -16,11 +16,52 @@ var input_state := {"forward": false, "back": false, "left": false, "right": fal
 var attract := true
 var attract_clock := 0.0
 var frame_clock := 0.0
+var web_pointer_callback = null
+var web_pointer_sequence := 0
 
 func _ready() -> void:
 	_build_ui()
+	_build_web_pointer_bridge()
 	_refresh_frame()
 	print("FREEDOOM_POE_DEMO_READY")
+
+func _build_web_pointer_bridge() -> void:
+	if not OS.has_feature("HTML5"):
+		return
+	web_pointer_callback = JavaScript.create_callback(self, "_on_web_pointer_tap")
+	var window = JavaScript.get_interface("window")
+	window.activePoeInput = web_pointer_callback
+	window.activePoeInputReady = true
+	window.activePoeUxState = "attract"
+
+func _on_web_pointer_tap(args: Array) -> void:
+	if args.size() < 2:
+		return
+	var viewport_size := get_viewport_rect().size
+	var position := Vector2(clamp(float(args[0]), 0.0, 1.0) * viewport_size.x, clamp(float(args[1]), 0.0, 1.0) * viewport_size.y)
+	var motion := InputEventMouseMotion.new()
+	motion.position = position
+	motion.global_position = position
+	Input.parse_input_event(motion)
+	var press := InputEventMouseButton.new()
+	press.button_index = BUTTON_LEFT
+	press.position = position
+	press.global_position = position
+	press.pressed = true
+	Input.parse_input_event(press)
+	get_tree().create_timer(0.12).connect("timeout", self, "_release_web_pointer", [position])
+	web_pointer_sequence += 1
+	var window = JavaScript.get_interface("window")
+	window.activePoeInputAck = web_pointer_sequence
+	window.activePoeUxState = "manual"
+
+func _release_web_pointer(position: Vector2) -> void:
+	var release := InputEventMouseButton.new()
+	release.button_index = BUTTON_LEFT
+	release.position = position
+	release.global_position = position
+	release.pressed = false
+	Input.parse_input_event(release)
 
 func _process(delta: float) -> void:
 	var forward := (1.0 if input_state.forward else 0.0) - (1.0 if input_state.back else 0.0)
