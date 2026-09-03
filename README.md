@@ -14,6 +14,7 @@ independently while sharing a consistent engineering baseline.
 | [Aero pressure digital twin](demos/aero-pressure-digital-twin/) | Godot 3.6 / GLES2 | Touch-orbitable single-seater, virtual airflow and simulated pressure telemetry | [Web demo](https://active-esl.github.io/godot-demos/aero-pressure-digital-twin/) |
 | [Active-Edge room booking](demos/room-booking/) | Godot 3.6 / GLES2 | Meeting-room availability, agenda, check-in, extend and walk-up booking journey | [Web demo](https://active-esl.github.io/godot-demos/room-booking/) |
 | [MAX Tablet](demos/resilient-tactical-picture/) | Godot 3.6 / GLES2 | Resilient network-node mapping, automatic route selection, degraded-path recovery and bilingual operation | [Web demo](https://active-esl.github.io/godot-demos/resilient-tactical-picture/) |
+| [Touch and display calibration lab](demos/touch-display-calibration/) | Godot 3.6 / GLES2 | Display patterns, guided five-point calibration, live multi-touch and BSP-first correction guidance | [Web demo](https://active-esl.github.io/godot-demos/touch-display-calibration/) |
 
 The Elanco-themed demonstrator uses simulated data and public themes. It is an
 unofficial concept: it is not connected to an Elanco site or production system,
@@ -69,6 +70,12 @@ The aero pressure digital twin provides:
 Its UI is built from Godot `Control` nodes, containers and standard interactive
 controls. It targets a 1920×1200 landscape display; physical panel orientation
 remains the responsibility of the BSP and compositor.
+
+The touch and display calibration lab provides colour, geometry and orientation
+patterns; guided five-point transform detection; live contact, drag and pinch
+visualisation; and lowest-layer correction guidance. It recommends generic
+Device Tree touchscreen properties before compositor rules and deliberately
+does not generate application-level rotation workarounds.
 
 Run it locally with:
 

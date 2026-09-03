@@ -108,12 +108,13 @@ jobs:
             --path demos/resilient-tactical-picture --no-window -s scripts/ui_smoke.gd \
             | tee "${RUNNER_TEMP}/resilient-tactical-ui-smoke.log"
           grep -q "RESILIENT_TACTICAL_UI_SMOKE_OK" "${RUNNER_TEMP}/resilient-tactical-ui-smoke.log"
-          mkdir -p dist/elanco-manufacturing-digital-twin dist/aero-pressure-digital-twin dist/room-booking dist/resilient-tactical-picture
+          mkdir -p dist/elanco-manufacturing-digital-twin dist/aero-pressure-digital-twin dist/room-booking dist/resilient-tactical-picture dist/touch-display-calibration
           cp -R site/. dist/
           manufacturing_base="manufacturing-${GITHUB_SHA::12}"
           aero_base="aero-${GITHUB_SHA::12}"
           booking_base="booking-${GITHUB_SHA::12}"
           tactical_base="tactical-${GITHUB_SHA::12}"
+          calibration_base="calibration-${GITHUB_SHA::12}"
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/elanco-manufacturing-digital-twin \
             --export "Web" "$GITHUB_WORKSPACE/dist/elanco-manufacturing-digital-twin/${manufacturing_base}.html"
@@ -131,6 +132,13 @@ jobs:
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/resilient-tactical-picture \
             --export "Web" "$GITHUB_WORKSPACE/dist/resilient-tactical-picture/${tactical_base}.html"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/touch-display-calibration --no-window -s scripts/ui_smoke.gd \
+            | tee "${RUNNER_TEMP}/touch-display-calibration-smoke.log"
+          grep -q "TOUCH_DISPLAY_CALIBRATION_SMOKE_OK" "${RUNNER_TEMP}/touch-display-calibration-smoke.log"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/touch-display-calibration \
+            --export "Web" "$GITHUB_WORKSPACE/dist/touch-display-calibration/${calibration_base}.html"
           mkdir -p dist/embedded/room-booking
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/room-booking \
@@ -176,6 +184,22 @@ jobs:
           test -s "dist/resilient-tactical-picture/${tactical_base}.wasm"
           test -s "dist/resilient-tactical-picture/${tactical_base}.pck"
           test -s dist/embedded/resilient-tactical-picture/active-edge-max-tablet.pck
+          mkdir -p dist/embedded/touch-display-calibration
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/touch-display-calibration \
+            --export-pack "Embedded PCK" \
+            "$GITHUB_WORKSPACE/dist/embedded/touch-display-calibration/touch-display-calibration.pck"
+          timeout 30s "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --main-pack "$GITHUB_WORKSPACE/dist/embedded/touch-display-calibration/touch-display-calibration.pck" \
+            --no-window -s scripts/ui_smoke.gd \
+            | tee "${RUNNER_TEMP}/touch-display-calibration-pack-smoke.log"
+          grep -q "TOUCH_DISPLAY_CALIBRATION_SMOKE_OK" "${RUNNER_TEMP}/touch-display-calibration-pack-smoke.log"
+          mv "dist/touch-display-calibration/${calibration_base}.html" \
+            dist/touch-display-calibration/index.html
+          test -s dist/touch-display-calibration/index.html
+          test -s "dist/touch-display-calibration/${calibration_base}.wasm"
+          test -s "dist/touch-display-calibration/${calibration_base}.pck"
+          test -s dist/embedded/touch-display-calibration/touch-display-calibration.pck
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
