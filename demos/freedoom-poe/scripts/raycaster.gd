@@ -19,8 +19,8 @@ const WIDTH := 256
 const HEIGHT := 160
 const FOV := 1.0472
 
-var position := Vector2(1.5, 1.5)
-var heading := 0.18
+var position := Vector2(1.5, 3.5)
+var heading := 0.0
 var elapsed := 0.0
 var shots := 0
 var doors := 0
