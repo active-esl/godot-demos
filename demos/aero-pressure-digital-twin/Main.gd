@@ -114,7 +114,10 @@ func build_car():
 	var model = packed_car.instance()
 	model.name = "CC0RacingCar"
 	model.scale = Vector3(1.65, 1.65, 1.65)
-	model.translation = Vector3(0, -0.48, 0)
+	# The scaled GLB extends about 0.61 units below its origin. The tunnel
+	# floor is at -0.55, so +0.06 places the tyre bottoms on the floor rather
+	# than burying the wheels up to their axles.
+	model.translation = Vector3(0, 0.06, 0)
 	car.add_child(model)
 	simplify_model_materials(model)
 
