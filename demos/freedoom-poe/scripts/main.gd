@@ -107,11 +107,13 @@ func _build_ui() -> void:
 	var title := Label.new()
 	title.text = "CAN IT RUN FREEDOOM?"
 	title.add_color_override("font_color", Color("f7f9fc"))
+	title.add_font_override("font", _font(30, true))
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	status = Label.new()
 	status.text = "ATTRACT MODE · TOUCH TO PLAY"
 	status.add_color_override("font_color", LIME)
+	status.add_font_override("font", _font(17, true))
 	header.add_child(status)
 	var body := HBoxContainer.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -134,14 +136,17 @@ func _build_ui() -> void:
 	var kicker := Label.new()
 	kicker.text = "POE EDGE RUNTIME"
 	kicker.add_color_override("font_color", CYAN)
+	kicker.add_font_override("font", _font(16, true))
 	side.add_child(kicker)
 	var description := Label.new()
 	description.text = "Touch-first 2.5D engine proof\ninside the Active-Edge PoE platform."
 	description.add_color_override("font_color", Color("a7b4c8"))
+	description.add_font_override("font", _font(17, false))
 	side.add_child(description)
 	telemetry = Label.new()
 	telemetry.rect_min_size.y = 112
 	telemetry.add_color_override("font_color", Color("f7f9fc"))
+	telemetry.add_font_override("font", _font(16, false))
 	side.add_child(telemetry)
 	var grid := GridContainer.new()
 	grid.columns = 3
@@ -162,6 +167,7 @@ func _build_ui() -> void:
 	var footer := Label.new()
 	footer.text = "GODOT 3.6 · GLES2 · SOFTWARE RAYCAST PROOF\nGPL ENGINE + FREEDOOM PAYLOAD INTEGRATION SEAM"
 	footer.add_color_override("font_color", Color("72839a"))
+	footer.add_font_override("font", _font(12, false))
 	side.add_child(footer)
 
 func _add_spacer(parent: Control) -> void:
@@ -186,6 +192,7 @@ func _button(text: String, colour: Color) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.add_color_override("font_color", Color("f7f9fc"))
+	button.add_font_override("font", _font(17, true))
 	button.add_stylebox_override("normal", _panel_style(PANEL, colour.darkened(0.55)))
 	button.add_stylebox_override("hover", _panel_style(colour.darkened(0.60), colour))
 	button.add_stylebox_override("pressed", _panel_style(colour.darkened(0.32), LIME))
@@ -204,6 +211,13 @@ func _panel_style(fill: Color, border: Color) -> StyleBoxFlat:
 	style.corner_radius_bottom_left = 8
 	style.corner_radius_bottom_right = 8
 	return style
+
+func _font(size: int, bold: bool) -> DynamicFont:
+	var font := DynamicFont.new()
+	font.font_data = load("res://fonts/DejaVuSans-Bold.ttf" if bold else "res://fonts/DejaVuSans.ttf")
+	font.size = size
+	font.use_filter = true
+	return font
 
 func _set_control(key: String, pressed: bool) -> void:
 	attract = false

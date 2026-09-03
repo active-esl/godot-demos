@@ -19,7 +19,7 @@ const WIDTH := 256
 const HEIGHT := 160
 const FOV := 1.0472
 
-var position := Vector2(2.5, 2.5)
+var position := Vector2(1.5, 1.5)
 var heading := 0.18
 var elapsed := 0.0
 var shots := 0
@@ -91,4 +91,3 @@ func _open(point: Vector2) -> bool:
 	var x := int(point.x)
 	var y := int(point.y)
 	return y >= 0 and y < MAP.size() and x >= 0 and x < MAP[y].length() and MAP[y].substr(x, 1) == "0"
-
