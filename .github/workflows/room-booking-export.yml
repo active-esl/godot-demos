@@ -11,7 +11,7 @@ env:
 
 jobs:
   export:
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: [self-hosted, Linux, X64, esl-proxmox]
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v6
