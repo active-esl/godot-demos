@@ -13,6 +13,9 @@ independently while sharing a consistent engineering baseline.
 | [Elanco manufacturing digital twin](demos/elanco-manufacturing-digital-twin/) | Godot 3.6 / GLES2 | Simulated factory process, asset and quality views | [Web demo](https://active-esl.github.io/godot-demos/elanco-manufacturing-digital-twin/) |
 | [Aero pressure digital twin](demos/aero-pressure-digital-twin/) | Godot 3.6 / GLES2 | Touch-orbitable single-seater, virtual airflow and simulated pressure telemetry | [Web demo](https://active-esl.github.io/godot-demos/aero-pressure-digital-twin/) |
 | [Active-Edge room booking](demos/room-booking/) | Godot 3.6 / GLES2 | Meeting-room availability, agenda, check-in, extend and walk-up booking journey | [Web demo](https://active-esl.github.io/godot-demos/room-booking/) |
+| [MAX Tablet](demos/resilient-tactical-picture/) | Godot 3.6 / GLES2 | Resilient network-node mapping, automatic route selection, degraded-path recovery and bilingual operation | [Web demo](https://active-esl.github.io/godot-demos/resilient-tactical-picture/) |
+| [Touch and display calibration lab](demos/touch-display-calibration/) | Godot 3.6 / GLES2 | Display patterns, guided five-point calibration, live multi-touch and BSP-first correction guidance | [Web demo](https://active-esl.github.io/godot-demos/touch-display-calibration/) |
+| [Can It Run Freedoom?](demos/freedoom-poe/) | Godot 3.6 / GLES2 | Touch-first software-rendering and PoE kiosk integration proof | [Web demo](https://active-esl.github.io/godot-demos/freedoom-poe/) |
 
 The Elanco-themed demonstrator uses simulated data and public themes. It is an
 unofficial concept: it is not connected to an Elanco site or production system,
@@ -21,6 +24,10 @@ and no endorsement or access to Elanco systems is implied.
 The aero demonstrator is deliberately customer-anonymous. Its procedural car,
 pressure zones and values are fictional and do not reproduce any customer
 vehicle, geometry, installation or dataset.
+
+MAX Tablet uses fictional nodes, positions, routes and network events. It is a
+product demonstrator rather than an operational or certified safety system,
+and contains no real personnel or military data.
 
 ## Repository layout
 
@@ -65,6 +72,12 @@ Its UI is built from Godot `Control` nodes, containers and standard interactive
 controls. It targets a 1920×1200 landscape display; physical panel orientation
 remains the responsibility of the BSP and compositor.
 
+The touch and display calibration lab provides colour, geometry and orientation
+patterns; guided five-point transform detection; live contact, drag and pinch
+visualisation; and lowest-layer correction guidance. It recommends generic
+Device Tree touchscreen properties before compositor rules and deliberately
+does not generate application-level rotation workarounds.
+
 Run it locally with:
 
 ```sh
@@ -82,6 +95,9 @@ godot3 --video-driver GLES2 --path demos/elanco-manufacturing-digital-twin
    warm run to confirm the intended speed-up.
 6. Publish web-capable demos at a stable path under the collection Pages site.
 
+Use the [product concept Live UX workflow](docs/PRODUCT_CONCEPT_WORKFLOW.md)
+when a demo will also appear inside an enclosure twin or on target hardware.
+
 ## CI and publication
 
 The current workflow publishes the catalogue at the Pages root and exports each
@@ -93,6 +109,20 @@ one Pages artefact rather than coupling all projects into a single Godot export.
 Changes to `main` are made through pull requests. Each pull request runs the
 Godot web-export checks and is included in the existing AESL Preloop pull-request
 review flow; Pages deployment remains limited to changes merged into `main`.
+
+External product-twin pages consume the stable assets under
+`/godot-demos/embed/manufacturing/` and `/godot-demos/embed/max-tablet/`.
+Generated content-addressed export names are internal to each Pages deployment
+and must not be pinned by another site because the next deployment replaces
+them. CI asserts that every stable embed endpoint contains its JS, WASM and PCK.
+
+The room-booking export refreshes its read-only, privacy-minimised Google
+Calendar snapshot every five minutes. Calendar credentials remain in GitHub
+Actions and are never included in the downloadable web application.
+
+The native screen build instead reads an eight-second local snapshot generated
+by a restricted systemd service. Its Google credential is provisioned onto the
+device separately from the Godot application and is never committed or packed.
 
 ## Licensing
 

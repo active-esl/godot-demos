@@ -8,6 +8,8 @@ const CYAN := Color("20d6d2")
 const LIME := Color("b6f23b")
 
 var list: VBoxContainer
+var scroll: ScrollContainer
+var focus_row: Control
 
 func _ready() -> void:
 	var panel := StyleBoxFlat.new()
@@ -27,7 +29,7 @@ func _ready() -> void:
 	margin.add_child(column)
 	var heading := _label("TODAY'S AGENDA", 18, CARBON, true)
 	column.add_child(heading)
-	var scroll := ScrollContainer.new()
+	scroll = ScrollContainer.new()
 	scroll.size_flags_vertical = SIZE_EXPAND_FILL
 	column.add_child(scroll)
 	list = VBoxContainer.new()
@@ -36,6 +38,7 @@ func _ready() -> void:
 	scroll.add_child(list)
 
 func configure(rows: Array, model) -> void:
+	focus_row = null
 	for child in list.get_children(): child.queue_free()
 	for row in rows:
 		if row.free:
@@ -57,6 +60,8 @@ func configure(rows: Array, model) -> void:
 			button.add_stylebox_override("hover", box)
 			button.connect("pressed", self, "emit_signal", ["slot_requested", int(row.start)])
 			list.add_child(button)
+			if focus_row == null and int(row.start) <= model.now_min and model.now_min < int(row.end):
+				focus_row = button
 		else:
 			var booking: Dictionary = row.booking
 			var item := VBoxContainer.new()
@@ -66,6 +71,15 @@ func configure(rows: Array, model) -> void:
 			var name := _label(str(booking.title), 16, CARBON, true)
 			name.clip_text = true
 			item.add_child(name)
+			if int(booking.start) <= model.now_min and model.now_min < int(booking.end):
+				focus_row = item
+			elif focus_row == null and int(booking.start) > model.now_min:
+				focus_row = item
+	call_deferred("_scroll_to_focus")
+
+func _scroll_to_focus() -> void:
+	if focus_row != null and is_instance_valid(focus_row):
+		scroll.ensure_control_visible(focus_row)
 
 func _label(value: String, size: int, colour: Color, bold: bool) -> Label:
 	var item := Label.new()

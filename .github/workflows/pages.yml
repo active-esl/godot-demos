@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -24,7 +26,7 @@ env:
 
 jobs:
   build:
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: [self-hosted, Linux, X64, esl-proxmox]
     steps:
       - name: Check out source
         uses: actions/checkout@v6
@@ -67,6 +69,29 @@ jobs:
           cp -R "${RUNNER_TEMP}/templates/templates/." "$XDG_DATA_HOME/godot/templates/${GODOT_VERSION}.stable/"
           printf '%s' "$expected" > "$marker"
 
+      - name: Prepare room calendar snapshot
+        shell: bash
+        env:
+          AESL_ROOM_DISPLAY_GCAL_SA_JSON: ${{ secrets.AESL_ROOM_DISPLAY_GCAL_SA_JSON }}
+        run: |
+          set -euo pipefail
+          if test -n "${AESL_ROOM_DISPLAY_GCAL_SA_JSON}"; then
+            venv="${RUNNER_TOOL_CACHE}/aesl-gcal-export-v1"
+            if ! test -x "${venv}/bin/python"; then
+              /usr/bin/python3 -m venv "${venv}"
+              "${venv}/bin/pip" install -r scripts/requirements-gcal.txt
+            fi
+            "${venv}/bin/python" scripts/gcal_export.py
+          else
+            /usr/bin/python3 scripts/gcal_export.py \
+              --fixture scripts/fixtures/google_events.json \
+              --day 2026-09-02
+          fi
+
+      - name: Test room calendar adapter
+        shell: bash
+        run: /usr/bin/python3 -m unittest scripts/test_gcal_export.py
+
       - name: Export HTML5 site
         shell: bash
         run: |
@@ -75,26 +100,107 @@ jobs:
             --path demos/room-booking --no-window -s scripts/model_smoke.gd \
             | tee "${RUNNER_TEMP}/room-booking-smoke.log"
           grep -q "ROOM_BOOKING_MODEL_SMOKE_OK" "${RUNNER_TEMP}/room-booking-smoke.log"
-          mkdir -p dist/elanco-manufacturing-digital-twin dist/aero-pressure-digital-twin dist/room-booking
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/resilient-tactical-picture --no-window -s scripts/model_smoke.gd \
+            | tee "${RUNNER_TEMP}/resilient-tactical-smoke.log"
+          grep -q "RESILIENT_TACTICAL_MODEL_SMOKE_OK" "${RUNNER_TEMP}/resilient-tactical-smoke.log"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/resilient-tactical-picture --no-window -s scripts/ui_smoke.gd \
+            | tee "${RUNNER_TEMP}/resilient-tactical-ui-smoke.log"
+          grep -q "RESILIENT_TACTICAL_UI_SMOKE_OK" "${RUNNER_TEMP}/resilient-tactical-ui-smoke.log"
+          mkdir -p dist/elanco-manufacturing-digital-twin dist/aero-pressure-digital-twin dist/room-booking dist/resilient-tactical-picture dist/touch-display-calibration dist/freedoom-poe
           cp -R site/. dist/
+          echo "84515cb0ad90e267dce597d83f14691f8f15549724a29baad052235332987254  dist/freedoom-engine/doom.wasm" \
+            | sha256sum --check --strict
           manufacturing_base="manufacturing-${GITHUB_SHA::12}"
           aero_base="aero-${GITHUB_SHA::12}"
           booking_base="booking-${GITHUB_SHA::12}"
+          tactical_base="tactical-${GITHUB_SHA::12}"
+          calibration_base="calibration-${GITHUB_SHA::12}"
+          freedoom_base="freedoom-${GITHUB_SHA::12}"
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/elanco-manufacturing-digital-twin \
             --export "Web" "$GITHUB_WORKSPACE/dist/elanco-manufacturing-digital-twin/${manufacturing_base}.html"
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/aero-pressure-digital-twin \
             --export "Web" "$GITHUB_WORKSPACE/dist/aero-pressure-digital-twin/${aero_base}.html"
+          timeout 30s "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --main-pack "$GITHUB_WORKSPACE/dist/aero-pressure-digital-twin/${aero_base}.pck" \
+            --no-window -s scripts/ui_smoke.gd \
+            | tee "${RUNNER_TEMP}/aero-ui-smoke.log"
+          grep -q "AERO_UI_SMOKE_OK" "${RUNNER_TEMP}/aero-ui-smoke.log"
           "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
             --path demos/room-booking \
             --export "Web" "$GITHUB_WORKSPACE/dist/room-booking/${booking_base}.html"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/resilient-tactical-picture \
+            --export "Web" "$GITHUB_WORKSPACE/dist/resilient-tactical-picture/${tactical_base}.html"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/touch-display-calibration --no-window -s scripts/ui_smoke.gd \
+            | tee "${RUNNER_TEMP}/touch-display-calibration-smoke.log"
+          grep -q "TOUCH_DISPLAY_CALIBRATION_SMOKE_OK" "${RUNNER_TEMP}/touch-display-calibration-smoke.log"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/freedoom-poe --no-window -s scripts/model_smoke.gd \
+            | tee "${RUNNER_TEMP}/freedoom-poe-smoke.log"
+          grep -q "FREEDOOM_POE_MODEL_SMOKE_OK" "${RUNNER_TEMP}/freedoom-poe-smoke.log"
+          timeout 30s "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/freedoom-poe --no-window -s scripts/ui_smoke.gd \
+            | tee "${RUNNER_TEMP}/freedoom-poe-ui-smoke.log"
+          grep -q "FREEDOOM_POE_UI_SMOKE_OK" "${RUNNER_TEMP}/freedoom-poe-ui-smoke.log"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/touch-display-calibration \
+            --export "Web" "$GITHUB_WORKSPACE/dist/touch-display-calibration/${calibration_base}.html"
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/freedoom-poe \
+            --export "Web" "$GITHUB_WORKSPACE/dist/freedoom-poe/${freedoom_base}.html"
+          mkdir -p dist/embedded/room-booking
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/room-booking \
+            --export-pack "Embedded PCK" \
+            "$GITHUB_WORKSPACE/dist/embedded/room-booking/active-edge-room-booking.pck"
+          timeout 30s "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --main-pack "$GITHUB_WORKSPACE/dist/embedded/room-booking/active-edge-room-booking.pck" \
+            --no-window -s scripts/model_smoke.gd \
+            | tee "${RUNNER_TEMP}/room-booking-pack-smoke.log"
+          grep -q "ROOM_BOOKING_MODEL_SMOKE_OK" "${RUNNER_TEMP}/room-booking-pack-smoke.log"
+          mkdir -p dist/embedded/resilient-tactical-picture
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/resilient-tactical-picture \
+            --export-pack "Embedded PCK" \
+            "$GITHUB_WORKSPACE/dist/embedded/resilient-tactical-picture/active-edge-max-tablet.pck"
+          timeout 30s "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --main-pack "$GITHUB_WORKSPACE/dist/embedded/resilient-tactical-picture/active-edge-max-tablet.pck" \
+            --no-window -s scripts/model_smoke.gd \
+            | tee "${RUNNER_TEMP}/resilient-tactical-pack-smoke.log"
+          grep -q "RESILIENT_TACTICAL_MODEL_SMOKE_OK" "${RUNNER_TEMP}/resilient-tactical-pack-smoke.log"
           mv "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.html" \
             dist/elanco-manufacturing-digital-twin/index.html
           mv "dist/aero-pressure-digital-twin/${aero_base}.html" \
             dist/aero-pressure-digital-twin/index.html
           mv "dist/room-booking/${booking_base}.html" \
             dist/room-booking/index.html
+          mv "dist/resilient-tactical-picture/${tactical_base}.html" \
+            dist/resilient-tactical-picture/index.html
+          # Product-twin sites consume these stable embed endpoints. The
+          # content-addressed standalone names change on every Pages deploy,
+          # so external consumers must never pin those generated names.
+          mkdir -p dist/embed/manufacturing dist/embed/max-tablet dist/embed/freedoom-poe
+          cp "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.js" \
+            dist/embed/manufacturing/godot.js
+          cp "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.wasm" \
+            dist/embed/manufacturing/godot.wasm
+          cp "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.pck" \
+            dist/embed/manufacturing/godot.pck
+          cp "dist/resilient-tactical-picture/${tactical_base}.js" \
+            dist/embed/max-tablet/godot.js
+          cp "dist/resilient-tactical-picture/${tactical_base}.wasm" \
+            dist/embed/max-tablet/godot.wasm
+          cp "dist/resilient-tactical-picture/${tactical_base}.pck" \
+            dist/embed/max-tablet/godot.pck
+          cp "dist/freedoom-poe/${freedoom_base}.js" dist/embed/freedoom-poe/godot.js
+          cp "dist/freedoom-poe/${freedoom_base}.wasm" dist/embed/freedoom-poe/godot.wasm
+          cp "dist/freedoom-poe/${freedoom_base}.pck" dist/embed/freedoom-poe/godot.pck
+          cp demos/room-booking/data/calendar_day.json dist/room-booking/calendar_day.json
           test -s dist/index.html
           test -s dist/elanco-manufacturing-digital-twin/index.html
           test -s "dist/elanco-manufacturing-digital-twin/${manufacturing_base}.wasm"
@@ -105,6 +211,40 @@ jobs:
           test -s dist/room-booking/index.html
           test -s "dist/room-booking/${booking_base}.wasm"
           test -s "dist/room-booking/${booking_base}.pck"
+          test -s dist/room-booking/calendar_day.json
+          test -s dist/embedded/room-booking/active-edge-room-booking.pck
+          test -s dist/resilient-tactical-picture/index.html
+          test -s "dist/resilient-tactical-picture/${tactical_base}.wasm"
+          test -s "dist/resilient-tactical-picture/${tactical_base}.pck"
+          test -s dist/embedded/resilient-tactical-picture/active-edge-max-tablet.pck
+          for demo in manufacturing max-tablet freedoom-poe; do
+            test -s "dist/embed/${demo}/godot.js"
+            test -s "dist/embed/${demo}/godot.wasm"
+            test -s "dist/embed/${demo}/godot.pck"
+          done
+          mkdir -p dist/embedded/touch-display-calibration
+          "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --path demos/touch-display-calibration \
+            --export-pack "Embedded PCK" \
+            "$GITHUB_WORKSPACE/dist/embedded/touch-display-calibration/touch-display-calibration.pck"
+          timeout 30s "$GODOT_CACHE_ROOT/Godot_v${GODOT_RELEASE}_linux_headless.64" \
+            --main-pack "$GITHUB_WORKSPACE/dist/embedded/touch-display-calibration/touch-display-calibration.pck" \
+            --no-window -s scripts/ui_smoke.gd \
+            | tee "${RUNNER_TEMP}/touch-display-calibration-pack-smoke.log"
+          grep -q "TOUCH_DISPLAY_CALIBRATION_SMOKE_OK" "${RUNNER_TEMP}/touch-display-calibration-pack-smoke.log"
+          mv "dist/touch-display-calibration/${calibration_base}.html" \
+            dist/touch-display-calibration/index.html
+          mv "dist/freedoom-poe/${freedoom_base}.html" dist/freedoom-poe/index.html
+          test -s dist/touch-display-calibration/index.html
+          test -s "dist/touch-display-calibration/${calibration_base}.wasm"
+          test -s "dist/touch-display-calibration/${calibration_base}.pck"
+          test -s dist/embedded/touch-display-calibration/touch-display-calibration.pck
+          test -s dist/freedoom-poe/index.html
+          test -s "dist/freedoom-poe/${freedoom_base}.wasm"
+          test -s "dist/freedoom-poe/${freedoom_base}.pck"
+          test -s dist/freedoom-engine/index.html
+          test -s dist/freedoom-engine/main.js
+          test -s dist/freedoom-engine/THIRD_PARTY_NOTICES.md
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
@@ -116,7 +256,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: [self-hosted, Linux, X64, esl-proxmox]
     needs: build
     steps:
       - name: Deploy to GitHub Pages

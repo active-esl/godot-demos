@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#050b14">
+  <title>Freedoom Engine | Active-Edge</title>
+  <link rel="stylesheet" href="runtime.css">
+</head>
+<body>
+  <main class="console">
+    <header>
+      <div><span class="eyebrow">ACTIVE-EDGE / POE RUNTIME</span><h1>CAN IT RUN <strong>FREEDOOM?</strong></h1></div>
+      <div id="runtime-status" class="status">LOADING ENGINE</div>
+    </header>
+    <section class="stage" aria-label="Freedoom game and touch controls">
+      <div class="screen-shell">
+        <canvas id="screen" width="640" height="400" tabindex="0" aria-label="Freedoom game view"></canvas>
+        <div id="start-overlay" class="start-overlay">
+          <button id="enterButton" class="start">START MISSION</button>
+          <span>Touch or press Enter</span>
+        </div>
+      </div>
+      <aside>
+        <div class="readout"><span>ENGINE</span><b>LINUXDOOM / WASM32</b></div>
+        <div class="readout"><span>CONTENT</span><b>FREEDOOM PHASE 1</b></div>
+        <div class="readout"><span>GAME FPS</span><b id="fps_stats">0</b></div>
+        <div class="readout"><span>FRAME</span><b id="drawframes_stats">0</b></div>
+        <div class="controls">
+          <div class="dpad">
+            <i></i><button id="upButton" aria-label="Move forward">▲</button><i></i>
+            <button id="leftButton" aria-label="Turn left">◀</button><button id="downButton" aria-label="Move backward">▼</button><button id="rightButton" aria-label="Turn right">▶</button>
+          </div>
+          <div class="actions">
+            <button id="ctrlButton">FIRE</button>
+            <button id="spaceButton">USE / OPEN</button>
+            <button id="altButton">STRAFE</button>
+          </div>
+        </div>
+        <p>Keyboard: arrows move · Ctrl fires · Space opens · Alt + arrows strafes</p>
+      </aside>
+    </section>
+    <footer><span>Open engine + open game data · no proprietary Doom assets</span><a href="THIRD_PARTY_NOTICES.md">Licences and source</a></footer>
+  </main>
+  <div id="output" hidden></div>
+  <span id="getmsps_stats" hidden></span><span id="getms_stats" hidden></span><span id="animationfps_stats" hidden></span><span id="focushint" hidden></span>
+  <script src="main.js" defer></script>
+</body>
+</html>
